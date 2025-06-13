@@ -29,10 +29,6 @@ d!   'W M@@@A  ][  M@@@A W`   !b
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.teamcode.mainModules.Alignment;
-import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
-import org.firstinspires.ftc.teamcode.mainModules.Raising;
 import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
@@ -57,9 +53,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, false);
-        Raising raising = new Raising(protect, hardwareMap, telemetry);
-        Alignment alignment = new Alignment(protect, hardwareMap, telemetry);
-        BallPusher ballPusher = new BallPusher(protect, hardwareMap, telemetry);
 
         Presses gamepad1_left_trigger = new Presses();
         Presses gamepad1_right_trigger = new Presses();
@@ -104,15 +97,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean goTo100 = gamepad2_triangle.toggle(gamepad2.triangle);
                 boolean goTo120 = gamepad2_circle.toggle(gamepad2.circle);
 
-
-                maxRaisedVelocity = raising.raise(
-                        raiseManual,
-                        goIf,
-                        goToBottom,
-                        goTo80,
-                        goTo100,
-                        goTo120
-                );
             }
 
 
