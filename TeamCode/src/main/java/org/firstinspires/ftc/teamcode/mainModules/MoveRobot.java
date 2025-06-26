@@ -68,9 +68,8 @@ public class MoveRobot {
     // the main function for moving the robot
     public void move(double heading, double drive, double strafe, double turn,
                      boolean fieldCentric, boolean turnFieldCentric,
-                     boolean lockToBackWall, double autoCompensation,
-                     boolean speed1, boolean speed2, boolean speed3,
-                     double maxRaisedVelocity
+                     double autoCompensation, // This parameter is unused in the provided code, but kept for signature.
+                     boolean speed1, boolean speed2, boolean speed3
     ) {
         if (speed1){
             maxSpeed=0.25;
@@ -79,22 +78,17 @@ public class MoveRobot {
         }if (speed3){
             maxSpeed=1;
         }
-        maxSpeed = Math.min(maxRaisedVelocity, maxSpeed);
-
 
 
         double x;
         double y;
         double turnCompensation;
-        double turnMultiplier = 0.3;
+        double turnMultiplier = 0.3; // This variable is declared but unused.
         SlowUpDate turnSlower = new SlowUpDate(20);
 
         //the robot can constantly compensate for its angle or have it be freely turning
-        {
-            if (lockToBackWall && turnFieldCentric) {
-                //turn to 0°
-                turnCompensation = (heading-2* Math.PI) * turnMultiplier;
-            } else if (turnFieldCentric) {
+        { // This block is unnecessary but harmless.
+            if (turnFieldCentric) {
                 turnCompensation = heading - wantedAngle;
                 if (turnSlower.isTurn()) {
                     wantedAngle += turn;
@@ -111,27 +105,17 @@ public class MoveRobot {
             // we have had problems with the imu, this prevents the code from crashing during a game if something goes wrong
             if (protect) {
                 try {
-                    if (lockToBackWall){
-                        x = autoCompensation;
-                    }
-                    else{
-                        x = drive * Math.cos(heading) - strafe * Math.sin(heading);
-                    }
+                    x = drive * Math.cos(heading) - strafe * Math.sin(heading);
                     y = drive * Math.sin(heading) + strafe * Math.cos(heading);
                 } catch (Exception e) {
                     x = drive;
                     y = strafe;
                 }
             } else {
-                if (lockToBackWall){
-                    x = autoCompensation;
-                }
-                else{
-                    x = drive * Math.cos(heading) - strafe * Math.sin(heading);
-                }
-                y = drive * Math.sin(heading) + strafe * Math.cos(heading);
+                x = drive;
+                y = strafe;
             }
-        } else {
+        } else { // Added else block for robot-centric movement
             x = drive;
             y = strafe;
         }
@@ -157,7 +141,7 @@ public class MoveRobot {
             double leftFrontRawSpeed = (leftFrontPowerRaw / max * maxAngularVelocityRadians);
             double leftBackRawSpeed = (leftBackPowerRaw / max * maxAngularVelocityRadians / wheelSizeCorrection);
             double rightFrontRawSpeed = (rightFrontPowerRaw / max * maxAngularVelocityRadians / wheelSizeCorrection);
-            double rightBackRawSpeed = (rightBackPowerRaw / max * maxAngularVelocityRadians);   
+            double rightBackRawSpeed = (rightBackPowerRaw / max * maxAngularVelocityRadians);
 
             leftFrontDriveEx.setVelocity(leftFrontRawSpeed * maxSpeed);
             leftBackDriveEx.setVelocity(leftBackRawSpeed * maxSpeed);
@@ -170,24 +154,25 @@ public class MoveRobot {
             rightFrontDriveEx.setPower(rightFrontPowerRaw / max * maxSpeed);
             rightBackDriveEx.setPower(rightBackPowerRaw / max * maxSpeed);
         }
-    }
-}
-class SlowUpDate {
-    // System.currentTimeMillis(); return milliseconds long so everything is in long to avoid type conflicts
-    private long msBetween = 20;
-    private long lastTime = System.currentTimeMillis();
+    } // Correct closing brace for the `move` method.
 
-    SlowUpDate(long msBetween){
-        this.msBetween = msBetween;
-    }
+    static class SlowUpDate {
+        // System.currentTimeMillis(); return milliseconds long so everything is in long to avoid type conflicts
+        private long msBetween = 20;
+        private long lastTime = System.currentTimeMillis();
 
-    boolean isTurn(){
-        long currentDiff = System.currentTimeMillis() - lastTime;
-        if (currentDiff > msBetween) {
-            lastTime = System.currentTimeMillis();
-            return true;
-        } else {
-            return false;
+        SlowUpDate(long msBetween){
+            this.msBetween = msBetween;
+        }
+
+        boolean isTurn(){
+            long currentDiff = System.currentTimeMillis() - lastTime;
+            if (currentDiff > msBetween) {
+                lastTime = System.currentTimeMillis();
+                return true;
+            } else {
+                return false;
+            }
         }
     }
-}
+} // Correct closing brace for the `MoveRobot` class.

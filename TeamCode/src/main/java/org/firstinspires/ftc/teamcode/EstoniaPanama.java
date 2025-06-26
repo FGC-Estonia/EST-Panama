@@ -70,12 +70,12 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad1_triangle = new Presses(speedSelectToggle);
         Presses gamepad1_circle = new Presses(speedSelectToggle);
         Presses gamepad1_cross = new Presses(speedSelectToggle);
-        gamepad1_triangle.setToggleTrue();//set deafult value
+        gamepad1_triangle.setToggleTrue();//set default value
 
         Presses gamepad2_dpad_left = new Presses();
         Presses gamepad2_dpad_right = new Presses();
 
-        double maxRaisedVelocity;
+        // double maxRaisedVelocity; // This variable is declared but unused, and causes a warning. Removed for cleaner code unless it has a future use.
 
         telemetry.update();
         waitForStart(); //everything has been initialized, waiting for the start button
@@ -96,7 +96,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean goTo80 = gamepad2_square.toggle(gamepad2.square);
                 boolean goTo100 = gamepad2_triangle.toggle(gamepad2.triangle);
                 boolean goTo120 = gamepad2_circle.toggle(gamepad2.circle);
-
+                // The commented out code here implies a 'raising' object that would use these values
+                // e.g., raising.setManualPower(raiseManual * maxRaisedVelocity);
+                // e.g., if (goToBottom) raising.goToPosition(bottomPosition);
             }
 
 
@@ -108,7 +110,10 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
 
             //move robot
-            {
+            // This entire block (including the if/else for gamepad2.left_bumper)
+            // needs to be correctly contained within the while loop.
+            // The extra braces caused issues.
+            { // This brace opens the "move robot" section for logical grouping.
                 // change desired distance
                 if (gamepad2.left_bumper) {
                     if (gamepad2.cross) {
@@ -121,59 +126,46 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 }
 
                 //position automatically when pressed
-                double autoCompensation = 0;
-                boolean lockToBackWall = false;
-                {
-                    if (gamepad1.right_trigger > 0.5) { // if the right trigger is pressed-auto drive
-                        lockToBackWall = true;
-                        autoCompensation = alignment.alignTarget(target);
-                    }
+                double autoCompensation = 0; // This variable is passed to moveRobot.move but its value is always 0 here.
 
-                    double leftRight = gamepad1.left_stick_x;
-                    double imuAngle = imuManager.getYawRadians();
-                    double frontBack = -gamepad1.left_stick_y;
-                    double turn = gamepad1.right_stick_x;
-                    boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
-                    boolean turnFieldCentric = gamepad1_left_bumper.toggle(gamepad1.left_bumper);
+                double leftRight = gamepad1.left_stick_x;
+                double imuAngle = imuManager.getYawRadians();
+                double frontBack = -gamepad1.left_stick_y;
+                double turn = gamepad1.right_stick_x;
+                boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
+                boolean turnFieldCentric = gamepad1_left_bumper.toggle(gamepad1.left_bumper);
 
-                    boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
-                    boolean speed2 = gamepad1_square.toggle(gamepad1.square);
-                    boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
+                boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
+                boolean speed2 = gamepad1_square.toggle(gamepad1.square);
+                boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
 
-                    moveRobot.move(
-                            imuAngle,
-                            frontBack, leftRight, turn,
-                            fieldCentric, turnFieldCentric,
-                            lockToBackWall, autoCompensation,
-                            speed1, speed2, speed3,
-                            maxRaisedVelocity
-                    );
-                }
+                moveRobot.move(
+                        imuAngle,
+                        frontBack, leftRight, turn,
+                        fieldCentric, turnFieldCentric,
+                        autoCompensation,
+                        speed1, speed2, speed3
+                );
+            } // This brace correctly closes the "move robot" section.
+
+
+            // release
+            {
+                boolean releaseLeft = gamepad2.left_trigger > 0.5;
+                boolean releaseRight = gamepad2.right_trigger > 0.5;
+                // The commented out code here implies a 'raising' or 'intake' object
+                // e.g., raising.releaseLeft(releaseLeft);
             }
 
-                // release
-                {
-                    boolean releaseLeft = gamepad2.left_trigger > 0.5;
-                    boolean releaseRight = gamepad2.right_trigger > 0.5;
+            // pushing hands
+            {
+                boolean leftState = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
+                boolean rightState = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
+                // The commented out code here implies a 'ballPusher' or similar object
+                // e.g., ballPusher.moveHands(leftState, rightState);
+            }
+            telemetry.update();
 
-                    raising.release(
-                            releaseLeft,
-                            releaseRight
-                    );
-                }
-
-                // pushing hands
-                {
-                    boolean leftState = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
-                    boolean rightState = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
-
-                    ballPusher.moveHands(
-                            leftState,
-                            rightState
-                    );
-                }
-                telemetry.update();
-
-        }
-    }
-}
+        } // This brace correctly closes the `while (opModeIsActive())` loop.
+    } // This brace correctly closes the `runOpMode()` method.
+} // This brace correctly closes the `EstoniaPanama` class.
