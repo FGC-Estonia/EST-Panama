@@ -67,16 +67,19 @@ public class MoveRobot {
 
     // the main function for moving the robot
     public void move(double heading, double drive, double strafe, double turn,
-                     boolean fieldCentric, boolean turnFieldCentric,
+                     boolean fieldCentric,
                      double autoCompensation, // This parameter is unused in the provided code, but kept for signature.
                      boolean speed1, boolean speed2, boolean speed3
     ) {
         if (speed1){
             maxSpeed=0.25;
+            telemetry.addData("Gear", "speed1");
         }if (speed2){
             maxSpeed=0.5;
+            telemetry.addData("Gear", "speed2");
         }if (speed3){
             maxSpeed=1;
+            telemetry.addData("Gear", "speed3");
         }
 
 
@@ -87,19 +90,9 @@ public class MoveRobot {
         SlowUpDate turnSlower = new SlowUpDate(20);
 
         //the robot can constantly compensate for its angle or have it be freely turning
-        { // This block is unnecessary but harmless.
-            if (turnFieldCentric) {
-                turnCompensation = heading - wantedAngle;
-                if (turnSlower.isTurn()) {
-                    wantedAngle += turn;
-                    telemetry.addData("wanted angle", wantedAngle);
-                    telemetry.addData("turn", turn);
-                }
-            } else {
-                wantedAngle = heading; // so if switched to the other the robot wont flick to a distant angle
-                turnCompensation = turn;
-            }
-        }
+        wantedAngle = heading; // so if switched to the other the robot wont flick to a distant angle
+        turnCompensation = turn;
+
         // The operator can choose to move the robot relative to the field or to the robot
         if (fieldCentric) {
             // we have had problems with the imu, this prevents the code from crashing during a game if something goes wrong
