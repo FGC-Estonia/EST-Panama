@@ -55,15 +55,22 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, false);
 
         Presses gamepad1_left_trigger = new Presses();
+        /* Unused controls, which may be put to use in the future.
         Presses gamepad1_right_trigger = new Presses();
         Presses gamepad1_left_bumper = new Presses();
+         */
         Presses gamepad1_right_bumper = new Presses();
 
-        Presses.ToggleGroup heightSelectToggleGroup = new Presses.ToggleGroup();
-        Presses gamepad2_cross = new Presses(heightSelectToggleGroup);
-        Presses gamepad2_triangle = new Presses(heightSelectToggleGroup);
-        Presses gamepad2_square = new Presses(heightSelectToggleGroup);
-        Presses gamepad2_circle = new Presses(heightSelectToggleGroup);
+        // Used to be the HeightToggleGroup, currently kept as a comment for future possible use.
+        //Presses.ToggleGroup TempToggleGroup = new Presses.ToggleGroup();
+        //Presses gamepad2_cross = new Presses(TempToggleGroup);
+        //Presses gamepad2_triangle = new Presses(TempToggleGroup);
+        //Presses gamepad2_square = new Presses(TempToggleGroup);
+        //Presses gamepad2_circle = new Presses(TempToggleGroup);
+
+        // Used to be the dpad controls, currently not in use but kept as a comment for future convenience.
+        //Presses gamepad2_dpad_left = new Presses();
+        //Presses gamepad2_dpad_right = new Presses();
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
         Presses gamepad1_square = new Presses(speedSelectToggle);
@@ -72,8 +79,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad1_cross = new Presses(speedSelectToggle);
         gamepad1_triangle.setToggleTrue();//set default value
 
-        Presses gamepad2_dpad_left = new Presses();
-        Presses gamepad2_dpad_right = new Presses();
+
 
         // double maxRaisedVelocity; // This variable is declared but unused, and causes a warning. Removed for cleaner code unless it has a future use.
 
@@ -89,7 +95,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             //move robot
                 //position automatically when pressed
-                double autoCompensation = 0; // This variable is passed to moveRobot.move but its value is always 0 here.
 
                 double leftRight = gamepad1.left_stick_x;
                 double imuAngle = imuManager.getYawRadians();
@@ -112,7 +117,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                         imuAngle,
                         frontBack, leftRight, turn,
                         fieldCentric,
-                        autoCompensation,
                         speed1, speed2, speed3
                 );
                 telemetry.update();

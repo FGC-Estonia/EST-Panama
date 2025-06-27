@@ -68,7 +68,6 @@ public class MoveRobot {
     // the main function for moving the robot
     public void move(double heading, double drive, double strafe, double turn,
                      boolean fieldCentric,
-                     double autoCompensation, // This parameter is unused in the provided code, but kept for signature.
                      boolean speed1, boolean speed2, boolean speed3
     ) {
         if (speed1){
