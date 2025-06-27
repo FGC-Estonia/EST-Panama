@@ -32,7 +32,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
-
+import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 
@@ -107,6 +107,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
                     gamepad1.rumble(1, 1, 1000);
                 }
+
                 telemetry.addData("Field Centric", fieldCentric);
                 telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
                 boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
