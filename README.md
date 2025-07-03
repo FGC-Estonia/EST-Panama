@@ -1,3 +1,7 @@
+# FGC 2025 Panamá — Team Estonia Robot Code 🇪🇪
+
+Welcome to the official repository of **FGC Team Estonia** for the **FIRST Global Challenge 2025** in **Panamá**. This project contains the robot control code developed using Android Studio and the FTC SDK base (`RobotController`). All Estonia-specific code is located in the `TeamCode` module.
+
 ## NOTICE
 
 This repository contains the public FTC SDK for the INTO THE DEEP (2024-2025) competition season.
