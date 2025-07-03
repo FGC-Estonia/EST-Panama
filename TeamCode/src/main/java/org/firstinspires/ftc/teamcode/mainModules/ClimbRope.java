@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.mainModules;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.Pose2d;
 
 public class ClimbRope {
     public enum RopeID {
