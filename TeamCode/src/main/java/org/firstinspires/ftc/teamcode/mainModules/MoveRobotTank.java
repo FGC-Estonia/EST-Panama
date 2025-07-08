@@ -17,6 +17,7 @@ public class MoveRobotTank {
     private double lastLeftPower = 0;
     private double lastRightPower = 0;
     private static final double DEADBAND = 0.05;
+    private double lastTimeCalledDrive = System.nanoTime();
     private final double SLEW_STEP = 0.05;
     private final double MAX_VELOCITY = 1972.92;
 
@@ -54,10 +55,15 @@ public class MoveRobotTank {
         return Math.pow(input, 3);
     }
 
-    private double applySlewRate(double current, double target) {
+    /* Limits acceleration changes by at most SLEW_STEP, taking into consideration update delays
+     * smoothing abrupt inputs into gradual, predictable motion.*/
+    public double applySlewRate(double current, double target, double deltaTime) {
         double delta = target - current;
-        if (Math.abs(delta) > SLEW_STEP) {
-            delta = Math.signum(delta) * SLEW_STEP;
+        // maximum change allowed this frame
+        double maxStep = SLEW_STEP * deltaTime;
+
+        if (Math.abs(delta) > maxStep) {
+            delta = Math.signum(delta) * maxStep;
         }
         return current + delta;
     }
@@ -89,8 +95,12 @@ public class MoveRobotTank {
         double t_cu = cubicScaling(t_db) * maxSpeed;
 
         //slew
-        double f_slew = applySlewRate(lastLeftPower, f_cu);
-        double t_slew = applySlewRate(lastRightPower, t_cu);
+        double now = System.nanoTime();
+        double deltaTime = (now - lastTimeCalledDrive) / 1_000_000_000.0; // to seconds
+        lastTimeCalledDrive = now;
+
+        double f_slew = applySlewRate(lastLeftPower, f_cu, deltaTime);
+        double t_slew = applySlewRate(lastRightPower, t_cu, deltaTime);
 
         //final
         lastLeftPower = f_slew + t_slew;
