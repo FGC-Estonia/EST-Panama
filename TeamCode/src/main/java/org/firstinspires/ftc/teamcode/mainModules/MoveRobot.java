@@ -126,19 +126,20 @@ public class MoveRobot {
         // if the power is not over 1, the code will divide by 1, which doesn't affect the end result
         double max = Math.max(maxRawPower, 1);
         double maxAngularVelocityRadians = 1972.92;
-        double wheelSizeCorrection = 1.2039; // we use 2 different sizes of wheels. We double the wheels on each motor for better grip and there are only 4 of both sizes
+        //double wheelSizeCorrection = 1.2039; // we use 2 different sizes of wheels. We double the wheels on each motor for better grip and there are only 4 of both sizes
 
         if (useVelocity) {
             // Calculate wheel speeds normalized to the wheels.
             double leftFrontRawSpeed = (leftFrontPowerRaw / max * maxAngularVelocityRadians);
-            double leftBackRawSpeed = (leftBackPowerRaw / max * maxAngularVelocityRadians / wheelSizeCorrection);
-            double rightFrontRawSpeed = (rightFrontPowerRaw / max * maxAngularVelocityRadians / wheelSizeCorrection);
+            double leftBackRawSpeed = (leftBackPowerRaw / max * maxAngularVelocityRadians);
+            double rightFrontRawSpeed = (rightFrontPowerRaw / max * maxAngularVelocityRadians);
             double rightBackRawSpeed = (rightBackPowerRaw / max * maxAngularVelocityRadians);
 
             leftFrontDriveEx.setVelocity(leftFrontRawSpeed * maxSpeed);
             leftBackDriveEx.setVelocity(leftBackRawSpeed * maxSpeed);
             rightFrontDriveEx.setVelocity(rightFrontRawSpeed * maxSpeed);
             rightBackDriveEx.setVelocity(rightBackRawSpeed * maxSpeed);
+
         } else {
             // Set motor power directly
             leftFrontDriveEx.setPower(leftFrontPowerRaw / max * maxSpeed);
@@ -146,6 +147,10 @@ public class MoveRobot {
             rightFrontDriveEx.setPower(rightFrontPowerRaw / max * maxSpeed);
             rightBackDriveEx.setPower(rightBackPowerRaw / max * maxSpeed);
         }
+        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
+        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
+        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
+        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
     } // Correct closing brace for the `move` method.
 
     static class SlowUpDate {
