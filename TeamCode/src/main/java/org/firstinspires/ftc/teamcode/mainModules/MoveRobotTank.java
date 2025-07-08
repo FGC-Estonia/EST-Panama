@@ -20,10 +20,7 @@ public class MoveRobotTank {
     private double driveStraightAngle = 0;
     private final double GYRO_CORRECTION_MAX_AMOUNT = 0.2;
     private final double GYRO_CORRECTION_MULTIPLIER = 2;
-    private static final double DEADBAND = 0.05;
     private double lastTimeCalledDrive = System.nanoTime();
-    private final double SLEW_STEP_FORWARD = 0.05;
-    private final double SLEW_STEP_TURN = 0.05;
     private final double MAX_VELOCITY = 1972.92;
 
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
@@ -53,34 +50,12 @@ public class MoveRobotTank {
         }
     }
 
-    //ignore, when joystick has moved very slightly
-    private double applyDeadband(double input, double deadband) {
-        if (Math.abs(input) < deadband) return 0.0;
-        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
-    }
-
-    private double cubicScaling(double input) {
-        return Math.pow(input, 3);
-    }
-
-    /* Limits acceleration changes by at most slewStep, taking into consideration update delays
-     * smoothing abrupt inputs into gradual, predictable motion.*/
-    private double applySlewRate(double current, double target, double slewStep, double deltaTime) {
-        double delta = target - current;
-        // maximum change allowed this frame
-        double maxStep = slewStep * deltaTime;
-
-        if (Math.abs(delta) > maxStep) {
-            delta = Math.signum(delta) * maxStep;
-        }
-        return current + delta;
-    }
 
     private double clamp(double current, double min, double max) {
         return Math.max(min, Math.min(current, max));
     }
 
-    public void drive(double heading, double rawForward, double rawTurn, boolean speed1, boolean speed2, boolean speed3) {
+    public void drive(double heading, double forward, double turn, boolean speed1, boolean speed2, boolean speed3) {
 
         if (speed1) {
             maxSpeed = 0.25;
@@ -93,32 +68,13 @@ public class MoveRobotTank {
             telemetry.addData("Gear", "High");
         }
 
-        //input processing
-        //deadband
-        double f_db = applyDeadband(rawForward,  DEADBAND);
-        double t_db = applyDeadband(rawTurn,     DEADBAND);
-
-        //Cubic scaling
-        double f_cu = cubicScaling(f_db) * maxSpeed;
-        double t_cu = cubicScaling(t_db) * maxSpeed;
-
-        //slew
-        double now = System.nanoTime();
-        double deltaTime = (now - lastTimeCalledDrive) / 1_000_000_000.0; // to seconds
-        lastTimeCalledDrive = now;
-
-        double f_slew = applySlewRate(lastForward, f_cu, SLEW_STEP_FORWARD, deltaTime);
-        double t_slew = applySlewRate(lastTurn, t_cu, SLEW_STEP_TURN, deltaTime);
-
-        lastForward = f_slew;
-        lastTurn = t_slew;
 
         //final
-        double leftPower = f_slew + t_slew;
-        double rightPower = f_slew - t_slew;
+        double leftPower = forward + turn;
+        double rightPower = forward - turn;
 
         //drive forward using gyro
-        if (t_slew == 0) {
+        if (turn == 0) {
             if (!driveStraightModeOn) {
                 driveStraightModeOn = true;
                 driveStraightAngle = heading;
@@ -134,7 +90,7 @@ public class MoveRobotTank {
         }
 
 
-        //final input clamp to -1 -> 1
+        //final clamp to -1 -> 1
         leftPower = clamp(leftPower, -1, 1);
         rightPower = clamp(rightPower, -1, 1);
 

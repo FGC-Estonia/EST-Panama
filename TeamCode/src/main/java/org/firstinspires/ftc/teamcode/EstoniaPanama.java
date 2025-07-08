@@ -36,6 +36,42 @@ import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
+    private double lastFrontBack = 0;
+    private double lastLeftRight = 0;
+    private double lastTurn = 0;
+    private static final double DEADBAND = 0.05;
+    private double lastTimeCalledDrive = System.nanoTime();
+    private final double SLEW_STEP_FORWARD = 0.05;
+    private final double SLEW_STEP_LEFT_RIGHT = 0.05;
+    private final double SLEW_STEP_TURN = 0.05;
+
+    //ignore, when joystick has moved very slightly
+    private double applyDeadband(double input, double deadband) {
+        if (Math.abs(input) < deadband) return 0.0;
+        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
+    }
+
+    private double cubicScaling(double input) {
+        return Math.pow(input, 3);
+    }
+
+    /* Limits acceleration changes by at most slewStep, taking into consideration update delays
+     * smoothing abrupt inputs into gradual, predictable motion.*/
+    private double applySlewRate(double current, double target, double slewStep, double deltaTime) {
+        double delta = target - current;
+        // maximum change allowed this frame
+        double maxStep = slewStep * deltaTime;
+
+        if (Math.abs(delta) > maxStep) {
+            delta = Math.signum(delta) * maxStep;
+        }
+        return current + delta;
+    }
+
+    private double clamp(double current, double min, double max) {
+        return Math.max(min, Math.min(current, max));
+    }
+
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
@@ -100,9 +136,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
                 double imuAngle = imuManager.getYawRadians();
                 //double leftRight = gamepad1.right_stick_x;  //used for tank drive
-                double leftRight = gamepad1.left_stick_x;
-                double frontBack = -gamepad1.left_stick_y;
-                double turn = gamepad1.right_stick_x;
+                double rawLeftRight = gamepad1.left_stick_x;
+                double rawFrontBack = -gamepad1.left_stick_y;
+                double rawTurn = gamepad1.right_stick_x;
                 boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
                 if (gamepad1_left_trigger.pressed(gamepad1.left_trigger > 0.5)) {
                     gamepad1.rumble(1, 1, 250);
@@ -117,20 +153,45 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean speed2 = gamepad1_square.toggle(gamepad1.square);
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
 
+                //input processing
+                //deadband
+                double f_db = applyDeadband(rawFrontBack,  DEADBAND);
+                double lr_db = applyDeadband(rawLeftRight,  DEADBAND);
+                double t_db = applyDeadband(rawTurn,     DEADBAND);
 
+                //Cubic scaling
+                double f_cu = cubicScaling(f_db);
+                double lr_cu = cubicScaling(lr_db);
+                double t_cu = cubicScaling(t_db);
+
+                //slew
+                double now = System.nanoTime();
+                double deltaTime = (now - lastTimeCalledDrive) / 1_000_000_000.0; // to seconds
+                lastTimeCalledDrive = now;
+
+                double f_slew = applySlewRate(lastFrontBack, f_cu, SLEW_STEP_FORWARD, deltaTime);
+                double lr_slew = applySlewRate(lastLeftRight, lr_cu, SLEW_STEP_LEFT_RIGHT, deltaTime);
+                double t_slew = applySlewRate(lastTurn, t_cu, SLEW_STEP_TURN, deltaTime);
+
+                lastFrontBack = clamp(f_slew, -1, 1);;
+                lastLeftRight = clamp(lr_slew, -1, 1);;
+                lastTurn = clamp(t_slew, -1, 1);
 
                 /*moveRobotTank.drive(
                         imuAngle,
-                        frontBack, leftRight,
+                        lastFrontBack, lastLeftRight,
                         speed1, speed2, speed3
                 );*/
 
                 moveRobot.move(
                         imuAngle,
-                        frontBack, leftRight, turn,
+                        rawFrontBack, rawLeftRight, lastTurn,
                         fieldCentric,
                         speed1, speed2, speed3
                 );
+
+                telemetry.addData("input turn: ", rawTurn);
+                telemetry.addData("processedTurn: ", lastTurn);
                 telemetry.update();
             } // This brace correctly closes the `while (opModeIsActive())` loop.
 
