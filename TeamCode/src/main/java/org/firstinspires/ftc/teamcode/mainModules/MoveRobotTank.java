@@ -14,11 +14,16 @@ public class MoveRobotTank {
     private final boolean useVelocity;
     private final boolean protect;
     private double maxSpeed = 1.0;
-    private double lastLeftPower = 0;
-    private double lastRightPower = 0;
+    private double lastForward = 0;
+    private double lastTurn = 0;
+    private boolean driveStraightModeOn = false;
+    private double driveStraightAngle = 0;
+    private final double GYRO_CORRECTION_MAX_AMOUNT = 0.2;
+    private final double GYRO_CORRECTION_MULTIPLIER = 2;
     private static final double DEADBAND = 0.05;
     private double lastTimeCalledDrive = System.nanoTime();
-    private final double SLEW_STEP = 0.05;
+    private final double SLEW_STEP_FORWARD = 0.05;
+    private final double SLEW_STEP_TURN = 0.05;
     private final double MAX_VELOCITY = 1972.92;
 
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
@@ -55,12 +60,12 @@ public class MoveRobotTank {
         return Math.pow(input, 3);
     }
 
-    /* Limits acceleration changes by at most SLEW_STEP, taking into consideration update delays
+    /* Limits acceleration changes by at most slewStep, taking into consideration update delays
      * smoothing abrupt inputs into gradual, predictable motion.*/
-    public double applySlewRate(double current, double target, double deltaTime) {
+    private double applySlewRate(double current, double target, double slewStep, double deltaTime) {
         double delta = target - current;
         // maximum change allowed this frame
-        double maxStep = SLEW_STEP * deltaTime;
+        double maxStep = slewStep * deltaTime;
 
         if (Math.abs(delta) > maxStep) {
             delta = Math.signum(delta) * maxStep;
@@ -72,7 +77,7 @@ public class MoveRobotTank {
         return Math.max(min, Math.min(current, max));
     }
 
-    public void drive(double rawForward, double rawTurn, boolean speed1, boolean speed2, boolean speed3) {
+    public void drive(double heading, double rawForward, double rawTurn, boolean speed1, boolean speed2, boolean speed3) {
 
         if (speed1) {
             maxSpeed = 0.25;
@@ -99,27 +104,47 @@ public class MoveRobotTank {
         double deltaTime = (now - lastTimeCalledDrive) / 1_000_000_000.0; // to seconds
         lastTimeCalledDrive = now;
 
-        double f_slew = applySlewRate(lastLeftPower, f_cu, deltaTime);
-        double t_slew = applySlewRate(lastRightPower, t_cu, deltaTime);
+        double f_slew = applySlewRate(lastForward, f_cu, SLEW_STEP_FORWARD, deltaTime);
+        double t_slew = applySlewRate(lastTurn, t_cu, SLEW_STEP_TURN, deltaTime);
+
+        lastForward = f_slew;
+        lastTurn = t_slew;
 
         //final
-        lastLeftPower = f_slew + t_slew;
-        lastRightPower = f_slew - t_slew;
+        double leftPower = f_slew + t_slew;
+        double rightPower = f_slew - t_slew;
 
-        //final input clamp to -1 -> 1
-        lastLeftPower = clamp(lastLeftPower, -1, 1);
-        lastRightPower = clamp(lastRightPower, -1, 1);
+        //drive forward using gyro
+        if (t_slew == 0) {
+            if (!driveStraightModeOn) {
+                driveStraightModeOn = true;
+                driveStraightAngle = heading;
+            }
 
-        if (useVelocity) {
-            leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);
-            rightDrive.setVelocity(lastRightPower * MAX_VELOCITY);
+            double angleError = heading - driveStraightAngle;
+            double correction = clamp(angleError * GYRO_CORRECTION_MULTIPLIER, -GYRO_CORRECTION_MAX_AMOUNT, GYRO_CORRECTION_MAX_AMOUNT);
+
+            leftPower -= correction;
+            rightPower += correction;
         } else {
-            leftDrive.setPower(lastLeftPower);
-            rightDrive.setPower(lastRightPower);
+            driveStraightModeOn = false;
         }
 
-        telemetry.addData("Left Power", lastLeftPower);
-        telemetry.addData("Right Power", lastRightPower);
+
+        //final input clamp to -1 -> 1
+        leftPower = clamp(leftPower, -1, 1);
+        rightPower = clamp(rightPower, -1, 1);
+
+        if (useVelocity) {
+            leftDrive.setVelocity(leftPower * MAX_VELOCITY);
+            rightDrive.setVelocity(rightPower * MAX_VELOCITY);
+        } else {
+            leftDrive.setPower(leftPower);
+            rightDrive.setPower(rightPower);
+        }
+
+        telemetry.addData("Left Power", leftPower);
+        telemetry.addData("Right Power", rightPower);
         telemetry.update();
     }
 }
