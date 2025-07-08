@@ -16,6 +16,7 @@ public class MoveRobotTank {
     private double maxSpeed = 1.0;
     private double lastLeftPower = 0;
     private double lastRightPower = 0;
+    private static final double DEADBAND = 0.05;
     private final double SLEW_STEP = 0.05;
     private final double MAX_VELOCITY = 1972.92;
 
@@ -43,6 +44,12 @@ public class MoveRobotTank {
         }
     }
 
+    //ignore, when joystick has moved very slightly
+    private double applyDeadband(double input, double deadband) {
+        if (Math.abs(input) < deadband) return 0.0;
+        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
+    }
+
     private double cubicScaling(double input) {
         return Math.pow(input, 3);
     }
@@ -55,7 +62,11 @@ public class MoveRobotTank {
         return current + delta;
     }
 
-    public void drive(double leftInput, double rightInput, boolean speed1, boolean speed2, boolean speed3) {
+    private double clamp(double current, double min, double max) {
+        return Math.max(min, Math.min(current, max));
+    }
+
+    public void drive(double rawForward, double rawTurn, boolean speed1, boolean speed2, boolean speed3) {
 
         if (speed1) {
             maxSpeed = 0.25;
@@ -68,11 +79,26 @@ public class MoveRobotTank {
             telemetry.addData("Gear", "High");
         }
 
-        double leftTarget = cubicScaling(leftInput) * maxSpeed;
-        double rightTarget = cubicScaling(rightInput) * maxSpeed;
+        //input processing
+        //deadband
+        double f_db = applyDeadband(rawForward,  DEADBAND);
+        double t_db = applyDeadband(rawTurn,     DEADBAND);
 
-        lastLeftPower = applySlewRate(lastLeftPower, leftTarget);
-        lastRightPower = applySlewRate(lastRightPower, rightTarget);
+        //Cubic scaling
+        double f_cu = cubicScaling(f_db) * maxSpeed;
+        double t_cu = cubicScaling(t_db) * maxSpeed;
+
+        //slew
+        double f_slew = applySlewRate(lastLeftPower, f_cu);
+        double t_slew = applySlewRate(lastRightPower, t_cu);
+
+        //final
+        lastLeftPower = f_slew + t_slew;
+        lastRightPower = f_slew - t_slew;
+
+        //final input clamp to -1 -> 1
+        lastLeftPower = clamp(lastLeftPower, -1, 1);
+        lastRightPower = clamp(lastRightPower, -1, 1);
 
         if (useVelocity) {
             leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);

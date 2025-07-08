@@ -97,8 +97,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             //move robot
                 //position automatically when pressed
 
-                double leftRight = gamepad1.left_stick_x;
+
                 double imuAngle = imuManager.getYawRadians();
+                double leftRight = gamepad1.right_stick_x;
                 double frontBack = -gamepad1.left_stick_y;
                 double turn = gamepad1.right_stick_x;
                 boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
@@ -115,12 +116,19 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean speed2 = gamepad1_square.toggle(gamepad1.square);
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
 
+
+
+                moveRobotTank.drive(
+                        frontBack, leftRight,
+                        speed1, speed2, speed3
+                );
+                /*
                 moveRobot.move(
                         imuAngle,
                         frontBack, leftRight, turn,
                         fieldCentric,
                         speed1, speed2, speed3
-                );
+                );*/
                 telemetry.update();
             } // This brace correctly closes the `while (opModeIsActive())` loop.
 
