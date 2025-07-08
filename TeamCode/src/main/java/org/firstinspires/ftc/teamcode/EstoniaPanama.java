@@ -35,7 +35,6 @@ import org.firstinspires.ftc.teamcode.mainModules.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
-
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
     @Override
     public void runOpMode() {
@@ -53,6 +52,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, false);
+        MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, false);
+
 
         Presses gamepad1_left_trigger = new Presses();
         /* Unused controls, which may be put to use in the future.

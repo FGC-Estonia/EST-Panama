@@ -1,97 +1,89 @@
-package org.firstinspires.ftc.teamcode.mainModules;  // The folder where the code is located
+package org.firstinspires.ftc.teamcode.mainModules;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * This class is a new version of MoveRobot specifically for a "tank drive" robot with only TWO wheels.
- * It assumes you have one motor for the left side and one for the right side.
- * It does not strafe (move side-to-side).
- */
 public class MoveRobotTank {
 
-    // These are boxes to hold our two-wheel motors.
-    private DcMotorEx leftBackDriveEx = null;   //  The left back drive wheel
-    private DcMotorEx rightBackDriveEx = null;  //  The right back drive wheel
-
-    // A box to hold our telemetry (the message writer for the phone screen).
+    private DcMotorEx leftDrive = null;
+    private DcMotorEx rightDrive = null;
+    private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
+    private final boolean useVelocity;
+    private final boolean protect;
+    private double maxSpeed = 1.0;
+    private double lastLeftPower = 0;
+    private double lastRightPower = 0;
+    private final double SLEW_STEP = 0.05;
+    private final double MAX_VELOCITY = 1972.92;
 
-    // A box for the robot's maximum speed, starting at 100%.
-    double maxSpeed = 1;
-
-    /**
-     * These are the "Getting Started" instructions that run when you create a new MoveRobotTank.
-     * @param hardwareMap The map of all the robot's connected parts.
-     * @param telemetry The tool to send messages to the driver's phone.
-     * @param useVelocity A setting to use motor encoders for precise speed (true) or just raw power (false).
-     */
-    public MoveRobotTank(HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity){
-        // We take the tools we are given and save them.
+    public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
+        this.protect = protect;
+        this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
-        // Run the instructions to find and set up the motors.
-        mapMotors(hardwareMap, useVelocity);
+        this.useVelocity = useVelocity;
+        mapMotors();
     }
 
-    /**
-     * This set of instructions finds the motors on the robot and sets them up correctly.
-     * @param hardwareMap The map of all the robot's connected parts.
-     * @param useVelocity A setting to use motor encoders or not.
-     */
-    private void mapMotors(HardwareMap hardwareMap, boolean useVelocity) {
-        // We find each motor using the name it was given in the robot's configuration.
-        // We are only looking for the back motors now.
-        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_CH");
-        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH");
+    private void mapMotors() {
+        leftDrive = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_CH");
+        rightDrive = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH");
 
-        // To make the robot go forward, the motors on one side need to spin the opposite way from the other.
-        // We set the left motor to FORWARD and the right motor to REVERSE.
-        leftBackDriveEx.setDirection(DcMotorEx.Direction.FORWARD);
-        rightBackDriveEx.setDirection(DcMotorEx.Direction.REVERSE);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        // Depending on our setting, we tell the motors to run using precise speed (encoders) or just raw power.
         if (useVelocity) {
-            leftBackDriveEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightBackDriveEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         } else {
-            leftBackDriveEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            rightBackDriveEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }
 
-    /**
-     * The main instruction for moving the tank-drive robot.
-     * @param leftPower The power for the left wheel (from -1.0 to 1.0).
-     * @param rightPower The power for the right wheel (from -1.0 to 1.0).
-     * @param speed1 Is the slowest speed gear selected?
-     * @param speed2 Is the medium speed gear selected?
-     * @param speed3 Is the fastest speed gear selected?
-     */
-    public void move(double leftPower, double rightPower, boolean speed1, boolean speed2, boolean speed3) {
-        // This is our gear shifter. It changes the robot's top speed.
-        if (speed1){
-            maxSpeed = 0.25; // 25% speed
-            telemetry.addData("Gear", "Slow (25%)");
-        } else if (speed2){
-            maxSpeed = 0.5;  // 50% speed
-            telemetry.addData("Gear", "Medium (50%)");
-        } else if (speed3){
-            maxSpeed = 1.0;  // 100% speed
-            telemetry.addData("Gear", "Fast (100%)");
+    private double cubicScaling(double input) {
+        return Math.pow(input, 3);
+    }
+
+    private double applySlewRate(double current, double target) {
+        double delta = target - current;
+        if (Math.abs(delta) > SLEW_STEP) {
+            delta = Math.signum(delta) * SLEW_STEP;
+        }
+        return current + delta;
+    }
+
+    public void drive(double leftInput, double rightInput, boolean speed1, boolean speed2, boolean speed3) {
+
+        if (speed1) {
+            maxSpeed = 0.25;
+            telemetry.addData("Gear", "Low");
+        } else if (speed2) {
+            maxSpeed = 0.5;
+            telemetry.addData("Gear", "Medium");
+        } else if (speed3) {
+            maxSpeed = 1.0;
+            telemetry.addData("Gear", "High");
         }
 
-        // We calculate the final power by multiplying the joystick power by our speed limit.
-        double finalLeftPower = leftPower * maxSpeed;
-        double finalRightPower = rightPower * maxSpeed;
+        double leftTarget = cubicScaling(leftInput) * maxSpeed;
+        double rightTarget = cubicScaling(rightInput) * maxSpeed;
 
-        // Send the final power command to the motors!
-        leftBackDriveEx.setPower(finalLeftPower);
-        rightBackDriveEx.setPower(finalRightPower);
+        lastLeftPower = applySlewRate(lastLeftPower, leftTarget);
+        lastRightPower = applySlewRate(lastRightPower, rightTarget);
 
-        // Show the power levels on the phone screen.
-        telemetry.addData("Left Power", finalLeftPower);
-        telemetry.addData("Right Power", finalRightPower);
+        if (useVelocity) {
+            leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);
+            rightDrive.setVelocity(lastRightPower * MAX_VELOCITY);
+        } else {
+            leftDrive.setPower(lastLeftPower);
+            rightDrive.setPower(lastRightPower);
+        }
+
+        telemetry.addData("Left Power", lastLeftPower);
+        telemetry.addData("Right Power", lastRightPower);
+        telemetry.update();
     }
 }
