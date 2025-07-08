@@ -7,12 +7,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Autonomous {
     private final MoveRobot drive;
-    private final PoseEstimator poseEstimator;
+    //private final PoseEstimator poseEstimator;
     private final Telemetry telemetry;
 
-    public Autonomous(MoveRobot moveRobot, PoseEstimator poseEstimator, Telemetry telemetry) {
+    public Autonomous(MoveRobot moveRobot /*, PoseEstimator poseEstimator */, Telemetry telemetry) {
         this.drive = moveRobot;
-        this.poseEstimator = poseEstimator;
+       // this.poseEstimator = poseEstimator;
         this.telemetry = telemetry;
     }
 

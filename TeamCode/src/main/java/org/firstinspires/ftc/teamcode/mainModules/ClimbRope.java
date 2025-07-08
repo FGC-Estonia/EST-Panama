@@ -23,8 +23,9 @@ public class ClimbRope {
             case BLUE_RIGHT:
                 return new Pose2d(6.0, 1.0, Math.toRadians(0));
             default:
-                return new Pose2d();
+            //    return new Pose2d(); //
         }
+        return null;
     }
 
     public void startClimb() {
