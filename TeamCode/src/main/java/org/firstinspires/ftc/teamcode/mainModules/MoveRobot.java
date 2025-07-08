@@ -25,6 +25,12 @@ public class MoveRobot {
     double wantedAngle = 0;
 
     double maxSpeed=1;
+    private double lastTurn = 0;
+    private static final double DEADBAND = 0.05;
+    private double lastTimeCalledDrive = System.nanoTime();
+    private final double SLEW_STEP_TURN = 0.5;  // need to change. testing
+    private final double TURN_INPUT_EXPONENT = 3;
+    private final double MAX_TURN_COMPENSATION = 200;
 
     public MoveRobot(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity){
 
@@ -65,8 +71,10 @@ public class MoveRobot {
         }
     }
 
+
+
     // the main function for moving the robot
-    public void move(double heading, double drive, double strafe, double turn,
+    public void move(double heading, double drive, double strafe, double rawTurn,
                      boolean fieldCentric,
                      boolean speed1, boolean speed2, boolean speed3
     ) {
@@ -90,7 +98,7 @@ public class MoveRobot {
 
         //the robot can constantly compensate for its angle or have it be freely turning
         wantedAngle = heading; // so if switched to the other the robot wont flick to a distant angle
-        turnCompensation = turn;
+        turnCompensation = Math.min(correctTurn(rawTurn), MAX_TURN_COMPENSATION);
 
         // The operator can choose to move the robot relative to the field or to the robot
         if (fieldCentric) {
@@ -171,5 +179,54 @@ public class MoveRobot {
                 return false;
             }
         }
+    }
+
+    //ignore, when joystick has moved very slightly
+    private double applyDeadband(double input, double deadband) {
+        if (Math.abs(input) < deadband) return 0.0;
+        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
+    }
+
+    private double cubicScaling(double input) {
+        return Math.pow(input, TURN_INPUT_EXPONENT);
+    }
+
+    /* Limits acceleration changes by at most slewStep, taking into consideration update delays
+     * smoothing abrupt inputs into gradual, predictable motion.*/
+    private double applySlewRate(double current, double target, double slewStep, double deltaTime) {
+        double delta = target - current;
+        // maximum change allowed this frame
+        double maxStep = slewStep * deltaTime;
+
+        if (Math.abs(delta) > maxStep) {
+            delta = Math.signum(delta) * maxStep;
+        }
+        return current + delta;
+    }
+
+    private double clamp(double current, double min, double max) {
+        return Math.max(min, Math.min(current, max));
+    }
+
+
+    private double correctTurn (double rawTurn) {
+        //input processing
+        //deadband
+        double t_db = applyDeadband(rawTurn, DEADBAND);
+
+        //Cubic scaling
+        double t_cu = cubicScaling(t_db);
+
+        //slew
+        double now = System.nanoTime();
+        double deltaTime = (now - lastTimeCalledDrive) / 1_000_000_000.0; // to seconds
+        lastTimeCalledDrive = now;
+
+        double t_slew = applySlewRate(lastTurn, t_cu, SLEW_STEP_TURN, deltaTime);
+        t_slew = t_db == 0 ? 0 : t_slew;
+
+        lastTurn = clamp(t_slew, -1, 1);
+
+        return lastTurn;
     }
 } // Correct closing brace for the `MoveRobot` class.

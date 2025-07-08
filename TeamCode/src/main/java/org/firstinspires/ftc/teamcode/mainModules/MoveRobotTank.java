@@ -23,7 +23,8 @@ public class MoveRobotTank {
     private static final double DEADBAND = 0.05;
     private double lastTimeCalledDrive = System.nanoTime();
     private final double SLEW_STEP_FORWARD = 0.05;
-    private final double SLEW_STEP_TURN = 0.05;
+    private final double SLEW_STEP_TURN = 0.5;
+    private final double TURN_INPUT_EXPONENT = 3;
     private final double MAX_VELOCITY = 1972.92;
 
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
@@ -60,7 +61,7 @@ public class MoveRobotTank {
     }
 
     private double cubicScaling(double input) {
-        return Math.pow(input, 3);
+        return Math.pow(input, TURN_INPUT_EXPONENT);
     }
 
     /* Limits acceleration changes by at most slewStep, taking into consideration update delays
@@ -109,6 +110,9 @@ public class MoveRobotTank {
 
         double f_slew = applySlewRate(lastForward, f_cu, SLEW_STEP_FORWARD, deltaTime);
         double t_slew = applySlewRate(lastTurn, t_cu, SLEW_STEP_TURN, deltaTime);
+
+        f_slew = f_db == 0 ? 0 : f_slew;
+        t_slew = t_db == 0 ? 0 : t_slew;
 
         lastForward = f_slew;
         lastTurn = t_slew;
