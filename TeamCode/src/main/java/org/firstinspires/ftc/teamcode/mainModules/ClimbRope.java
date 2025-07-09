@@ -23,14 +23,14 @@ public class ClimbRope {
     }
 
     private void mapMotors() {
-        leftMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_4_CH");
-        rightMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_5_CH");
+        leftMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_CH");
+        rightMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_1_CH");
 
         leftMotor.setDirection(DcMotor.Direction.FORWARD);
         rightMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public enum RopeID {
