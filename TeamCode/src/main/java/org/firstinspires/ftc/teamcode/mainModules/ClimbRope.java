@@ -64,7 +64,7 @@ public class ClimbRope {
         rightMotor.setPower(direction);
     }
 
-    public void endClimb() {
+    public void stopClimb() {
         leftMotor.setPower(0);
         rightMotor.setPower(0);
     }
