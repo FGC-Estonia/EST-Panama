@@ -56,6 +56,11 @@ public class MoveRobotTank {
         return Math.pow(input, 3);
     }
 
+    private double smoothControl(double input) {
+        return 0.5 * input * (5 - 3 * input * input);  // Fast-start, slow-top
+    }
+
+
     private double applySlewRate(double current, double target) {
         double delta = target - current;
         double step = (Math.abs(target) < Math.abs(current)) ? SLEW_STEP * 3 : SLEW_STEP; // 3x faster braking
@@ -81,7 +86,10 @@ public class MoveRobotTank {
         }
 
         double drive = cubicScaling(driveInput);
-        double turn = cubicScaling(turnInput);
+        double turnGain = 0.8;
+        if (Math.abs(turnInput) < 0.03) turnInput = 0;
+        double turn = smoothControl(turnInput) * turnGain;
+
 
         double leftTarget = drive + turn;
         double rightTarget = drive - turn;
