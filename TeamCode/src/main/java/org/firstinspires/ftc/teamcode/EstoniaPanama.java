@@ -52,8 +52,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
          */
 
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
-        MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, false);
-        MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, false);
+        MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
+        MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
 
 
         Presses gamepad1_left_trigger = new Presses();
@@ -130,9 +130,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean speed2 = gamepad1_square.toggle(gamepad1.square);
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
                 boolean holdPitch = gamepad1_dpad_up.toggle(gamepad1.dpad_up);
-                double targetPitchRad = 0.3;
-
-
+                double targetPitchRad = 0.175;
 
                 moveRobotTank.drive(
                         imuAngle, imuPitch,

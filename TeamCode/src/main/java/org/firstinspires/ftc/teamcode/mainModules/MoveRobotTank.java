@@ -23,7 +23,7 @@ public class MoveRobotTank {
 
     private double wantedHeading = 0;
     private boolean headingHoldEnabled = false;
-    private final double headingKp = 0.5; // Tunable: radians -> motor power
+    private final double headingKp = 0.6; // Tunable: radians -> motor power
 
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
         this.protect = protect;
@@ -134,6 +134,8 @@ public class MoveRobotTank {
 
         telemetry.addData("Left Power", lastLeftPower);
         telemetry.addData("Right Power", lastRightPower);
+        telemetry.addData("Left Velocity", leftDrive.getVelocity());
+        telemetry.addData("Right Velocity", rightDrive.getVelocity());
         telemetry.addData("Heading Error", normalizeRadians(wantedHeading - currentHeading));
     }
 
