@@ -25,12 +25,6 @@ public class MoveRobot {
     double wantedAngle = 0;
 
     double maxSpeed=1;
-    private double lastTurn = 0;
-    private static final double DEADBAND = 0.05;
-    private double lastTimeCalledDrive = System.nanoTime();
-    private final double SLEW_STEP_TURN = 0.5;  // need to change. testing
-    private final double TURN_INPUT_EXPONENT = 3;
-    private final double MAX_TURN_COMPENSATION = 200;
 
     public MoveRobot(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity){
 
@@ -69,12 +63,11 @@ public class MoveRobot {
             rightFrontDriveEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             rightBackDriveEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
+
     }
 
-
-
     // the main function for moving the robot
-    public void move(double heading, double drive, double strafe, double rawTurn,
+    public void move(double heading, double drive, double strafe, double turn,
                      boolean fieldCentric,
                      boolean speed1, boolean speed2, boolean speed3
     ) {
@@ -89,35 +82,28 @@ public class MoveRobot {
             telemetry.addData("Gear", "speed3");
         }
 
-
         double x;
         double y;
         double turnCompensation;
-        double turnMultiplier = 0.3; // This variable is declared but unused.
-        SlowUpDate turnSlower = new SlowUpDate(20);
 
         //the robot can constantly compensate for its angle or have it be freely turning
         wantedAngle = heading; // so if switched to the other the robot wont flick to a distant angle
-        turnCompensation = Math.min(correctTurn(rawTurn), MAX_TURN_COMPENSATION);
+        turnCompensation = turn;
 
         // The operator can choose to move the robot relative to the field or to the robot
-        if (fieldCentric) {
-            // we have had problems with the imu, this prevents the code from crashing during a game if something goes wrong
-            if (protect) {
-                try {
-                    x = drive * Math.cos(heading) - strafe * Math.sin(heading);
-                    y = drive * Math.sin(heading) + strafe * Math.cos(heading);
-                } catch (Exception e) {
-                    x = drive;
-                    y = strafe;
-                }
-            } else {
-                x = drive;
-                y = strafe;
+        x = drive;
+        y = strafe;
+
+        if (fieldCentric && protect) {
+            try {
+                x = drive * Math.cos(heading) - strafe * Math.sin(heading);
+                y = drive * Math.sin(heading) + strafe * Math.cos(heading);
+            } catch (Exception ignored) {
+                // Already defaulted to drive/strafe
             }
-        } else { // Added else block for robot-centric movement
-            x = drive;
-            y = strafe;
+        } else if (fieldCentric) {
+            x = drive * Math.cos(heading) - strafe * Math.sin(heading);
+            y = drive * Math.sin(heading) + strafe * Math.cos(heading);
         }
 
         // Calculates raw power to motors
@@ -134,7 +120,6 @@ public class MoveRobot {
         // if the power is not over 1, the code will divide by 1, which doesn't affect the end result
         double max = Math.max(maxRawPower, 1);
         double maxAngularVelocityRadians = 1972.92;
-        //double wheelSizeCorrection = 1.2039; // we use 2 different sizes of wheels. We double the wheels on each motor for better grip and there are only 4 of both sizes
 
         if (useVelocity) {
             // Calculate wheel speeds normalized to the wheels.
@@ -156,77 +141,8 @@ public class MoveRobot {
             rightBackDriveEx.setPower(rightBackPowerRaw / max * maxSpeed);
         }
         telemetry.addData("left front", leftFrontDriveEx.getVelocity());
-        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
-        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
-        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
+        telemetry.addData("right front", rightFrontDriveEx.getVelocity());
+        telemetry.addData("left back", leftBackDriveEx.getVelocity());
+        telemetry.addData("right back", rightBackDriveEx.getVelocity());
     } // Correct closing brace for the `move` method.
-
-    static class SlowUpDate {
-        // System.currentTimeMillis(); return milliseconds long so everything is in long to avoid type conflicts
-        private long msBetween = 20;
-        private long lastTime = System.currentTimeMillis();
-
-        SlowUpDate(long msBetween){
-            this.msBetween = msBetween;
-        }
-
-        boolean isTurn(){
-            long currentDiff = System.currentTimeMillis() - lastTime;
-            if (currentDiff > msBetween) {
-                lastTime = System.currentTimeMillis();
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    //ignore, when joystick has moved very slightly
-    private double applyDeadband(double input, double deadband) {
-        if (Math.abs(input) < deadband) return 0.0;
-        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
-    }
-
-    private double cubicScaling(double input) {
-        return Math.pow(input, TURN_INPUT_EXPONENT);
-    }
-
-    /* Limits acceleration changes by at most slewStep, taking into consideration update delays
-     * smoothing abrupt inputs into gradual, predictable motion.*/
-    private double applySlewRate(double current, double target, double slewStep, double deltaTime) {
-        double delta = target - current;
-        // maximum change allowed this frame
-        double maxStep = slewStep * deltaTime;
-
-        if (Math.abs(delta) > maxStep) {
-            delta = Math.signum(delta) * maxStep;
-        }
-        return current + delta;
-    }
-
-    private double clamp(double current, double min, double max) {
-        return Math.max(min, Math.min(current, max));
-    }
-
-
-    private double correctTurn (double rawTurn) {
-        //input processing
-        //deadband
-        double t_db = applyDeadband(rawTurn, DEADBAND);
-
-        //Cubic scaling
-        double t_cu = cubicScaling(t_db);
-
-        //slew
-        double now = System.nanoTime();
-        double deltaTime = (now - lastTimeCalledDrive) / 1_000_000_000.0; // to seconds
-        lastTimeCalledDrive = now;
-
-        double t_slew = applySlewRate(lastTurn, t_cu, SLEW_STEP_TURN, deltaTime);
-        t_slew = t_db == 0 ? 0 : t_slew;
-
-        lastTurn = clamp(t_slew, -1, 1);
-
-        return lastTurn;
-    }
 } // Correct closing brace for the `MoveRobot` class.

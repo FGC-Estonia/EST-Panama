@@ -54,8 +54,7 @@ public class MoveRobotTank {
 
 
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
-                      boolean speed1, boolean speed2, boolean speed3,
-                      boolean holdPitch, double targetPitchRad) {
+                      boolean speed1, boolean speed2, boolean speed3) {
 
         if (speed1) {
             maxSpeed = 0.35;
@@ -95,17 +94,6 @@ public class MoveRobotTank {
 
         leftTarget *= maxSpeed;
         rightTarget *= maxSpeed;
-
-        if (holdPitch) {
-            double pitchError = targetPitchRad - currentPitch;
-            double kP_pitch = 4.0;  // Tune this gain
-            double basePower = 0.4;
-            double pitchCorrection = pitchError * kP_pitch;
-            double wheeliePower = Range.clip(basePower + pitchCorrection, -1.0, 1.0);
-
-            leftTarget = wheeliePower + turn;
-            rightTarget = wheeliePower - turn;
-        }
 
         lastLeftPower = leftTarget;
         lastRightPower = rightTarget;

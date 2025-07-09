@@ -42,6 +42,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
+        boolean xDrive = true;
         /*
          * map objects
          * objectName = new ClassName()
@@ -78,6 +79,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad1_dpad_left = new Presses();
         Presses gamepad1_dpad_right = new Presses();
         Presses gamepad1_dpad_up = new Presses();
+        Presses gamepad1_dpad_down = new Presses();
+
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
         Presses gamepad1_square = new Presses(speedSelectToggle);
@@ -105,28 +108,41 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
 
                 double imuAngle = imuManager.getYawRadians();
+                double imuAngle = imuManager.getYawRadians();
                 double imuPitch = imuManager.getPitchRadians();
                 //double leftRight = gamepad1.right_stick_x;  //used for tank drive
                 double leftRight = gamepad1.left_stick_x;
                 double frontBack = -gamepad1.left_stick_y;
                 double turn = gamepad1.right_stick_x;
                 boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
-                boolean forceClimb = gamepad2_cross.toggle(gamepad2.cross);
+                int climbingDirection = 0;
+                int previousClimbDirection = 0;
 
-                //rope climbing
-                if (gamepad2.right_bumper || forceClimb) {
+            // Climb mode state: 1 = up, -1 = down, 0 = stopped
+                if (gamepad1_dpad_up.pressed(gamepad1.dpad_up)) {
                     climbingDirection = 1;
-                } else if (gamepad2.left_bumper) {
+                }
+                if (gamepad1_dpad_down.pressed(gamepad1.dpad_down)) {
                     climbingDirection = -1;
-                } else {
-                    climbingDirection = 0;
                 }
 
-                if (climbingDirection != 0) {gamepad1.rumble(1, 1, 200); }
+// Pause toggle
+            if (gamepad1_dpad_left.pressed(gamepad1.dpad_left)) {
+                climbingDirection = (climbingDirection == 0) ? previousClimbDirection : 0;
+            }
+
+            if (climbingDirection != 0) {
+                previousClimbDirection = climbingDirection;
+                gamepad1.rumble(1, 1, 200);
+            }
+
+// Apply motor control
+            climbRope.ropeClimbing(climbingDirection);
 
 
 
-                if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
+
+            if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
                     gamepad1.rumble(1, 1, 1000);
                 }
 
@@ -136,24 +152,23 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
                 boolean speed2 = gamepad1_square.toggle(gamepad1.square);
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
-                boolean holdPitch = gamepad1_dpad_up.toggle(gamepad1.dpad_up);
-                double targetPitchRad = 0.175;
 
                 climbRope.ropeClimbing(climbingDirection);
 
-                moveRobotTank.drive(
-                        imuAngle, imuPitch,
-                        frontBack, turn,
-                        speed1, speed2, speed3,
-                        holdPitch, targetPitchRad
-                );
-
-                /*moveRobot.move(
-                        imuAngle,
-                        frontBack, leftRight, turn,
-                        fieldCentric,
-                        speed1, speed2, speed3
-                );*/
+                if (!xDrive) {
+                    moveRobotTank.drive(
+                            imuAngle, imuPitch,
+                            frontBack, turn,
+                            speed1, speed2, speed3
+                    );
+                } else {
+                    moveRobot.move(
+                            imuAngle,
+                            frontBack, leftRight, turn,
+                            fieldCentric,
+                            speed1, speed2, speed3
+                    );
+                }
                 telemetry.update();
             } // This brace correctly closes the `while (opModeIsActive())` loop.
 

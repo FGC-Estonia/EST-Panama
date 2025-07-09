@@ -26,7 +26,7 @@ public class ImuManager {
                 imu = hardwareMap.get(IMU.class, "imu");
 
                 RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-                RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+                RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
 
                 RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -42,7 +42,7 @@ public class ImuManager {
             imu = hardwareMap.get(IMU.class, "imu");
 
             RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-            RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+            RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
 
             RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -93,6 +93,15 @@ public class ImuManager {
             lastAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             return lastAngle;
         }
+    }
+
+    private double smoothedYaw = 0;
+    private final double alpha = 0.1; // Smoothing factor (0.0 = very smooth, 1.0 = no smoothing)
+
+    public double getSmoothedYawRadians() {
+        double rawYaw = getYawRadians(); // Assume this reads from IMU
+        smoothedYaw = alpha * rawYaw + (1 - alpha) * smoothedYaw;
+        return smoothedYaw;
     }
 
     public double getPitchRadians(){
