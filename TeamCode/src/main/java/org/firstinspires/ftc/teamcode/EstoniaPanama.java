@@ -69,9 +69,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         //Presses gamepad2_square = new Presses(TempToggleGroup);
         //Presses gamepad2_circle = new Presses(TempToggleGroup);
 
-        // Used to be the dpad controls, currently not in use but kept as a comment for future convenience.
-        //Presses gamepad2_dpad_left = new Presses();
-        //Presses gamepad2_dpad_right = new Presses();
+        Presses gamepad1_dpad_left = new Presses();
+        Presses gamepad1_dpad_right = new Presses();
+        Presses gamepad1_dpad_up = new Presses();
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
         Presses gamepad1_square = new Presses(speedSelectToggle);
@@ -99,6 +99,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
 
                 double imuAngle = imuManager.getYawRadians();
+                double imuPitch = imuManager.getPitchRadians();
                 //double leftRight = gamepad1.right_stick_x;  //used for tank drive
                 double leftRight = gamepad1.left_stick_x;
                 double frontBack = -gamepad1.left_stick_y;
@@ -113,16 +114,20 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
                 telemetry.addData("Field Centric", fieldCentric);
                 telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
+                telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
                 boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
                 boolean speed2 = gamepad1_square.toggle(gamepad1.square);
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
+                boolean holdPitch = gamepad1_dpad_up.toggle(gamepad1.dpad_up);
+                double targetPitchRad = 0.3;
 
 
 
                 moveRobotTank.drive(
-                        imuAngle,
+                        imuAngle, imuPitch,
                         frontBack, turn,
-                        speed1, speed2, speed3
+                        speed1, speed2, speed3,
+                        holdPitch, targetPitchRad
                 );
 
                 /*moveRobot.move(

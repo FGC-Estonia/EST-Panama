@@ -26,7 +26,7 @@ public class ImuManager {
                 imu = hardwareMap.get(IMU.class, "imu");
 
                 RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-                RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+                RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
                 RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -42,7 +42,7 @@ public class ImuManager {
             imu = hardwareMap.get(IMU.class, "imu");
 
             RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-            RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
+            RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
             RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -92,6 +92,27 @@ public class ImuManager {
         }else {
             lastAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             return lastAngle;
+        }
+    }
+
+    public double getPitchRadians(){
+        double lastPitch = 0;
+
+        if (imuErrorBoolean) {
+            initImu();
+        }
+
+        if (protect) {
+            try {
+                lastPitch = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.RADIANS);
+                return lastPitch;
+            } catch (Exception errorIMU) {
+                telemetry.addData("IMU ERROR (pitch)", errorIMU.getMessage());
+                return lastPitch;
+            }
+        } else {
+            lastPitch = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.RADIANS);
+            return lastPitch;
         }
     }
 }

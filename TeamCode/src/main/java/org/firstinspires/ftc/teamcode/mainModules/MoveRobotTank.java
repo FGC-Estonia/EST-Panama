@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.mainModules;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class MoveRobotTank {
@@ -21,7 +23,7 @@ public class MoveRobotTank {
 
     private double wantedHeading = 0;
     private boolean headingHoldEnabled = false;
-    private final double headingKp = 1.5; // Tunable: radians -> motor power
+    private final double headingKp = 0.5; // Tunable: radians -> motor power
 
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
         this.protect = protect;
@@ -59,14 +61,15 @@ public class MoveRobotTank {
         return current + delta;
     }
 
-    public void drive(double currentHeading, double driveInput, double turnInput,
-                      boolean speed1, boolean speed2, boolean speed3) {
+    public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
+                      boolean speed1, boolean speed2, boolean speed3,
+                      boolean holdPitch, double targetPitchRad) {
 
         if (speed1) {
-            maxSpeed = 0.25;
+            maxSpeed = 0.35;
             telemetry.addData("Gear", "Low");
         } else if (speed2) {
-            maxSpeed = 0.5;
+            maxSpeed = 0.6;
             telemetry.addData("Gear", "Medium");
         } else if (speed3) {
             maxSpeed = 1.0;
@@ -101,8 +104,25 @@ public class MoveRobotTank {
         leftTarget *= maxSpeed;
         rightTarget *= maxSpeed;
 
-        lastLeftPower = applySlewRate(lastLeftPower, leftTarget);
-        lastRightPower = applySlewRate(lastRightPower, rightTarget);
+        if (holdPitch) {
+            double pitchError = targetPitchRad - currentPitch;
+            double kP_pitch = 4.0;  // Tune this gain
+            double basePower = 0.4;
+            double pitchCorrection = pitchError * kP_pitch;
+            double wheeliePower = Range.clip(basePower + pitchCorrection, -1.0, 1.0);
+
+            leftTarget = wheeliePower + turn;
+            rightTarget = wheeliePower - turn;
+        }
+
+        if (holdPitch || headingHoldEnabled) {
+            lastLeftPower = leftTarget;
+            lastRightPower = rightTarget;
+        } else {
+            lastLeftPower = applySlewRate(lastLeftPower, leftTarget);
+            lastRightPower = applySlewRate(lastRightPower, rightTarget);
+        }
+
 
         if (useVelocity) {
             leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);
@@ -115,7 +135,6 @@ public class MoveRobotTank {
         telemetry.addData("Left Power", lastLeftPower);
         telemetry.addData("Right Power", lastRightPower);
         telemetry.addData("Heading Error", normalizeRadians(wantedHeading - currentHeading));
-        telemetry.update();
     }
 
     private double normalizeRadians(double angle) {
