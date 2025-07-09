@@ -37,7 +37,8 @@ import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
-    int curClimbState = 0; // 0 - inactive, 1 - climbing up, 2 - climbing down
+    int climbingDirection = 0; // 0 - stop, 1 - up, -1 - down
+
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
@@ -61,7 +62,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad1_left_trigger = new Presses();
         // Unused controls, which may be put to use in the future.
         Presses gamepad1_right_trigger = new Presses();
-        Presses gamepad1_left_bumper = new Presses();
+
+        //for rope climbing
+        Presses gamepad2_cross = new Presses();
 
         Presses gamepad1_right_bumper = new Presses();
 
@@ -108,22 +111,18 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 double frontBack = -gamepad1.left_stick_y;
                 double turn = gamepad1.right_stick_x;
                 boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
+                boolean forceClimb = gamepad2_cross.toggle(gamepad2.cross);
 
                 //rope climbing
-                if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
-                    curClimbState = (curClimbState + 1) % 3;
-
-                    if (curClimbState == 0) {
-                        climbRope.stopClimb();
-                    } else if (curClimbState == 1) {
-                        climbRope.startClimb(true);
-                    } else if (curClimbState == 2) {
-                        climbRope.startClimb(false);
-                    }
-
-                    telemetry.addData("rope climbing state: ", curClimbState);
-                    gamepad1.rumble(1, 1, 300);
+                if (gamepad2.right_bumper || forceClimb) {
+                    climbingDirection = 1;
+                } else if (gamepad2.left_bumper) {
+                    climbingDirection = -1;
+                } else {
+                    climbingDirection = 0;
                 }
+
+                if (climbingDirection != 0) {gamepad1.rumble(1, 1, 200); }
 
 
 
@@ -139,6 +138,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
                 boolean holdPitch = gamepad1_dpad_up.toggle(gamepad1.dpad_up);
                 double targetPitchRad = 0.175;
+
+                climbRope.ropeClimbing(climbingDirection);
 
                 moveRobotTank.drive(
                         imuAngle, imuPitch,
