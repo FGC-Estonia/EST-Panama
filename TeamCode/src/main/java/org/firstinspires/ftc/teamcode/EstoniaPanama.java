@@ -33,6 +33,7 @@ import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
+import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
@@ -53,13 +54,14 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, false);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, false);
+        ClimbRope climbRope = new ClimbRope(protect, hardwareMap, telemetry);
 
 
         Presses gamepad1_left_trigger = new Presses();
-        /* Unused controls, which may be put to use in the future.
+        // Unused controls, which may be put to use in the future.
         Presses gamepad1_right_trigger = new Presses();
         Presses gamepad1_left_bumper = new Presses();
-         */
+
         Presses gamepad1_right_bumper = new Presses();
 
         // Used to be the HeightToggleGroup, currently kept as a comment for future possible use.
@@ -99,14 +101,23 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
 
                 double imuAngle = imuManager.getYawRadians();
-                //double leftRight = gamepad1.right_stick_x;  //used for tank drive
                 double leftRight = gamepad1.left_stick_x;
                 double frontBack = -gamepad1.left_stick_y;
                 double turn = gamepad1.right_stick_x;
                 boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
-                if (gamepad1_left_trigger.pressed(gamepad1.left_trigger > 0.5)) {
+
+                //rope climbing
+                if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
+                    climbRope.startClimb(false);
                     gamepad1.rumble(1, 1, 250);
                 }
+                if (gamepad1_left_trigger.pressed(gamepad1.left_trigger > 0.5)) {
+                    climbRope.startClimb(true);
+                    gamepad1.rumble(1, 1, 250);
+                }
+
+
+
                 if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
                     gamepad1.rumble(1, 1, 1000);
                 }
