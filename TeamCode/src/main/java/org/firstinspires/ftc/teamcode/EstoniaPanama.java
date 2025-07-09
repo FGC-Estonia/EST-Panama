@@ -119,18 +119,18 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
 
 
-                /*moveRobotTank.drive(
+                moveRobotTank.drive(
                         imuAngle,
-                        frontBack, leftRight,
+                        frontBack, turn,
                         speed1, speed2, speed3
-                );*/
+                );
 
-                moveRobot.move(
+                /*moveRobot.move(
                         imuAngle,
                         frontBack, leftRight, turn,
                         fieldCentric,
                         speed1, speed2, speed3
-                );
+                );*/
                 telemetry.update();
             } // This brace correctly closes the `while (opModeIsActive())` loop.
 

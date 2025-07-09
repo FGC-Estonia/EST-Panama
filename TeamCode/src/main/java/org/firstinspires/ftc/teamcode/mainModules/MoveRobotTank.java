@@ -19,6 +19,10 @@ public class MoveRobotTank {
     private final double SLEW_STEP = 0.05;
     private final double MAX_VELOCITY = 1972.92;
 
+    private double wantedHeading = 0;
+    private boolean headingHoldEnabled = false;
+    private final double headingKp = 1.5; // Tunable: radians -> motor power
+
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
         this.protect = protect;
         this.hardwareMap = hardwareMap;
@@ -55,7 +59,8 @@ public class MoveRobotTank {
         return current + delta;
     }
 
-    public void drive(double leftInput, double rightInput, boolean speed1, boolean speed2, boolean speed3) {
+    public void drive(double currentHeading, double driveInput, double turnInput,
+                      boolean speed1, boolean speed2, boolean speed3) {
 
         if (speed1) {
             maxSpeed = 0.25;
@@ -68,8 +73,33 @@ public class MoveRobotTank {
             telemetry.addData("Gear", "High");
         }
 
-        double leftTarget = cubicScaling(leftInput) * maxSpeed;
-        double rightTarget = cubicScaling(rightInput) * maxSpeed;
+        double drive = cubicScaling(driveInput);
+        double turn = cubicScaling(turnInput);
+
+        double leftTarget = drive + turn;
+        double rightTarget = drive - turn;
+
+        double avgInput = (leftTarget + rightTarget) / 2;
+        double diff = Math.abs(leftTarget - rightTarget);
+
+        if (diff < 0.05 && Math.abs(avgInput) > 0.05) {
+            if (!headingHoldEnabled) {
+                wantedHeading = currentHeading;
+            }
+            headingHoldEnabled = true;
+        } else {
+            headingHoldEnabled = false;
+        }
+
+        if (headingHoldEnabled) {
+            double headingError = normalizeRadians(wantedHeading - currentHeading);
+            double correction = headingError * headingKp;
+            leftTarget -= correction;
+            rightTarget += correction;
+        }
+
+        leftTarget *= maxSpeed;
+        rightTarget *= maxSpeed;
 
         lastLeftPower = applySlewRate(lastLeftPower, leftTarget);
         lastRightPower = applySlewRate(lastRightPower, rightTarget);
@@ -84,6 +114,13 @@ public class MoveRobotTank {
 
         telemetry.addData("Left Power", lastLeftPower);
         telemetry.addData("Right Power", lastRightPower);
+        telemetry.addData("Heading Error", normalizeRadians(wantedHeading - currentHeading));
         telemetry.update();
+    }
+
+    private double normalizeRadians(double angle) {
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle < -Math.PI) angle += 2 * Math.PI;
+        return angle;
     }
 }
