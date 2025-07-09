@@ -37,6 +37,7 @@ import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
+    int curClimbState = 0; // 0 - inactive, 1 - climbing up, 2 - climbing down
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
@@ -108,15 +109,19 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
                 //rope climbing
                 if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
-                    climbRope.startClimb(false);
-                    gamepad1.rumble(1, 1, 250);
-                }
-                if (gamepad1_left_trigger.pressed(gamepad1.left_trigger > 0.5)) {
-                    climbRope.startClimb(true);
-                    gamepad1.rumble(1, 1, 250);
-                }
+                    curClimbState = (curClimbState + 1) % 3;
 
+                    if (curClimbState == 0) {
+                        climbRope.stopClimb();
+                    } else if (curClimbState == 1) {
+                        climbRope.startClimb(true);
+                    } else if (curClimbState == 2) {
+                        climbRope.startClimb(false);
+                    }
 
+                    telemetry.addData("rope climbing state: ", curClimbState);
+                    gamepad1.rumble(1, 1, 300);
+                }
 
                 if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
                     gamepad1.rumble(1, 1, 1000);
