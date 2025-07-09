@@ -13,6 +13,7 @@ public class ClimbRope {
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
+    double MAX_VELOCITY = 600;
 
     public ClimbRope(boolean protect, HardwareMap hardwareMap, Telemetry telemetry) {
         this.protect = protect;
@@ -59,9 +60,10 @@ public class ClimbRope {
 
     public void startClimb(boolean goUp) {
         int direction = goUp ? 1 : -1;
+        double velocity = goUp ? MAX_VELOCITY : MAX_VELOCITY * 0.2;
 
-        leftMotor.setPower(direction);
-        rightMotor.setPower(direction);
+        leftMotor.setVelocity(velocity * direction);
+        rightMotor.setVelocity(velocity * direction);
     }
 
     public void stopClimb() {
