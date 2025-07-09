@@ -13,7 +13,6 @@ public class ClimbRope {
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
-    double MAX_VELOCITY = 600;
 
     public ClimbRope(boolean protect, HardwareMap hardwareMap, Telemetry telemetry) {
         this.protect = protect;
@@ -29,8 +28,8 @@ public class ClimbRope {
         leftMotor.setDirection(DcMotor.Direction.FORWARD);
         rightMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public enum RopeID {
@@ -60,10 +59,10 @@ public class ClimbRope {
 
     public void startClimb(boolean goUp) {
         int direction = goUp ? 1 : -1;
-        double velocity = goUp ? MAX_VELOCITY : MAX_VELOCITY * 0.2;
+        double multiplier = goUp ? 1 : 0.5;
 
-        leftMotor.setVelocity(velocity * direction);
-        rightMotor.setVelocity(velocity * direction);
+        leftMotor.setPower(multiplier * direction);
+        rightMotor.setPower(multiplier * direction);
     }
 
     public void stopClimb() {
