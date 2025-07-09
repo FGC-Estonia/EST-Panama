@@ -23,7 +23,7 @@ public class MoveRobotTank {
 
     private double wantedHeading = 0;
     private boolean headingHoldEnabled = false;
-    private final double headingKp = 0.01; // Tunable: radians -> motor power
+    private final double headingKp = 0.25; // Tunable: radians -> motor power
 
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
         this.protect = protect;
@@ -52,23 +52,6 @@ public class MoveRobotTank {
         }
     }
 
-    private double cubicScaling(double input) {
-        return Math.pow(input, 3);
-    }
-
-    private double smoothControl(double input) {
-        return 0.5 * input * (5 - 3 * input * input);  // Fast-start, slow-top
-    }
-
-
-    private double applySlewRate(double current, double target) {
-        double delta = target - current;
-        double step = (Math.abs(target) < Math.abs(current)) ? SLEW_STEP * 3 : SLEW_STEP; // 3x faster braking
-        if (Math.abs(delta) > step) {
-            delta = Math.signum(delta) * step;
-        }
-        return current + delta;
-    }
 
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
                       boolean speed1, boolean speed2, boolean speed3,
@@ -85,11 +68,8 @@ public class MoveRobotTank {
             telemetry.addData("Gear", "High");
         }
 
-        double drive = cubicScaling(driveInput);
-        double turnGain = 0.8;
-        if (Math.abs(turnInput) < 0.03) turnInput = 0;
-        double turn = smoothControl(turnInput) * turnGain;
-
+        double drive = driveInput;
+        double turn = turnInput*0.5;
 
         double leftTarget = drive + turn;
         double rightTarget = drive - turn;
@@ -127,22 +107,8 @@ public class MoveRobotTank {
             rightTarget = wheeliePower - turn;
         }
 
-        if (holdPitch || headingHoldEnabled) {
-            lastLeftPower = leftTarget;
-            lastRightPower = rightTarget;
-        } else {
-            if (Math.abs(leftTarget) < 0.05) {
-                lastLeftPower = 0;
-            } else {
-                lastLeftPower = applySlewRate(lastLeftPower, leftTarget);
-            }
-
-            if (Math.abs(rightTarget) < 0.05) {
-                lastRightPower = 0;
-            } else {
-                lastRightPower = applySlewRate(lastRightPower, rightTarget);
-            }
-        }
+        lastLeftPower = leftTarget;
+        lastRightPower = rightTarget;
 
         if (useVelocity) {
             leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);
