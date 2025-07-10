@@ -125,10 +125,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
             // else: do nothing, keep previous direction (motor holds position)
 
-            climbRope.ropeClimbing(climbingDirection);
-
-
-// Apply motor control
+            // Apply motor control
             climbRope.ropeClimbing(climbingDirection);
 
 
@@ -144,8 +141,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
                 boolean speed2 = gamepad1_square.toggle(gamepad1.square);
                 boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
-
-                climbRope.ropeClimbing(climbingDirection);
+                
 
                 if (!xDrive) {
                     moveRobotTank.drive(
