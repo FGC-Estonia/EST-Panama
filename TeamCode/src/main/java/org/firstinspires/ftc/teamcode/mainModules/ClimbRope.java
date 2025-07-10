@@ -62,10 +62,20 @@ public class ClimbRope {
     }
 
     public void ropeClimbing(int direction) {
-        double multiplier = (direction == -1) ? CLIMB_DOWN_RATE : 1;
+        double leftPower, rightPower;
 
-        leftMotor.setPower(multiplier * direction);
-        rightMotor.setPower(multiplier * direction);
+        if (direction == 1) {  // Climb up
+            leftPower = 1.0;
+            rightPower = 1.0;
+        } else if (direction == -1) {  // Climb down slowly
+            leftPower = -CLIMB_DOWN_RATE;
+            rightPower = -CLIMB_DOWN_RATE;
+        } else {
+            leftPower = 0;
+            rightPower = 0;
+        }
+
+        leftMotor.setPower(leftPower);
+        rightMotor.setPower(rightPower);
     }
-
 }

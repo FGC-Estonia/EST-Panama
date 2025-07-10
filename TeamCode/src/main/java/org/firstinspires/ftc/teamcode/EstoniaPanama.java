@@ -106,8 +106,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             //move robot
                 //position automatically when pressed
 
-
-                double imuAngle = imuManager.getYawRadians();
                 double imuAngle = imuManager.getYawRadians();
                 double imuPitch = imuManager.getPitchRadians();
                 //double leftRight = gamepad1.right_stick_x;  //used for tank drive
@@ -116,25 +114,19 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 double turn = gamepad1.right_stick_x;
                 boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
                 int climbingDirection = 0;
-                int previousClimbDirection = 0;
 
-            // Climb mode state: 1 = up, -1 = down, 0 = stopped
-                if (gamepad1_dpad_up.pressed(gamepad1.dpad_up)) {
-                    climbingDirection = 1;
-                }
-                if (gamepad1_dpad_down.pressed(gamepad1.dpad_down)) {
-                    climbingDirection = -1;
-                }
-
-// Pause toggle
-            if (gamepad1_dpad_left.pressed(gamepad1.dpad_left)) {
-                climbingDirection = (climbingDirection == 0) ? previousClimbDirection : 0;
+            // Climbing logic with dpad
+            if (gamepad1.dpad_up) {
+                climbingDirection = 1;  // climb up
+            } else if (gamepad1.dpad_down) {
+                climbingDirection = -1; // climb down
+            } else if (gamepad1.dpad_left) {
+                climbingDirection = 0;  // hold position
             }
+            // else: do nothing, keep previous direction (motor holds position)
 
-            if (climbingDirection != 0) {
-                previousClimbDirection = climbingDirection;
-                gamepad1.rumble(1, 1, 200);
-            }
+            climbRope.ropeClimbing(climbingDirection);
+
 
 // Apply motor control
             climbRope.ropeClimbing(climbingDirection);
