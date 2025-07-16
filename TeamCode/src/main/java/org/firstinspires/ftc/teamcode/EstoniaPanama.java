@@ -48,6 +48,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
+        CollectBalls collectBalls = null;
+        boolean collectBallsAttached = false; // leave at false, it detects automatically
         /*
          * map objects
          * objectName = new ClassName()
