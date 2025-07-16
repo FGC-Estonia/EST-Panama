@@ -13,7 +13,8 @@ public class ClimbRope {
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
-    private final double CLIMB_DOWN_RATE = 0.3;
+    private final double CLIMB_DOWN_RATE = 0.1;
+    private final double STAY_ON_RATE = 0.1;
 
     public ClimbRope(boolean protect, HardwareMap hardwareMap, Telemetry telemetry) {
         this.protect = protect;
@@ -70,6 +71,9 @@ public class ClimbRope {
         } else if (direction == -1) {  // Climb down slowly
             leftPower = -CLIMB_DOWN_RATE;
             rightPower = -CLIMB_DOWN_RATE;
+        } else if (direction == 2) {
+            leftPower = STAY_ON_RATE;
+            rightPower = STAY_ON_RATE;
         } else {
             leftPower = 0;
             rightPower = 0;
