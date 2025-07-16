@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.util.SlewRateLimiter;
 
 public class MoveRobotTank {
 
@@ -16,10 +17,15 @@ public class MoveRobotTank {
     private final boolean useVelocity;
     private final boolean protect;
     private double maxSpeed = 1.0;
+    private double turnSpeed = 0.9;
+    private double MAX_TURN_SPEED = 0.5;
+    private double MAX_TURN_DURING_CURVE = 0.2;
     private double lastLeftPower = 0;
     private double lastRightPower = 0;
-    private final double SLEW_STEP = 0.05;
     private final double MAX_VELOCITY = 1972.92;
+    private SlewRateLimiter driverLimiter;
+    private SlewRateLimiter turnLimiter;
+    private SlewRateLimiter gyroLimiter;
 
     private double wantedHeading = 0;
     private boolean headingHoldEnabled = false;
@@ -43,6 +49,11 @@ public class MoveRobotTank {
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        driverLimiter = new SlewRateLimiter(4);
+        turnLimiter = new SlewRateLimiter(20);
+        gyroLimiter = new SlewRateLimiter(4);
+
+
         if (useVelocity) {
             leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -52,26 +63,76 @@ public class MoveRobotTank {
         }
     }
 
+    //ignore, when joystick has moved very slightly
+    private double applyDeadzone(double input, double deadband) {
+        if (Math.abs(input) < deadband) return 0.0;
+        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
+    }
+
+
+
 
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
                       boolean speed1, boolean speed2, boolean speed3) {
 
         if (speed1) {
             maxSpeed = 0.35;
+            turnSpeed = 0.7;
             telemetry.addData("Gear", "Low");
         } else if (speed2) {
             maxSpeed = 0.6;
+            turnSpeed = 0.8;
             telemetry.addData("Gear", "Medium");
         } else if (speed3) {
             maxSpeed = 1.0;
+            turnSpeed = 0.9;
             telemetry.addData("Gear", "High");
         }
 
-        double drive = driveInput;
-        double turn = turnInput*0.5;
 
-        double leftTarget = drive + turn;
-        double rightTarget = drive - turn;
+
+        // before limiting:
+        double rawDrive = applyDeadzone(driveInput, 0.05);
+        double rawTurn  = applyDeadzone(turnInput, 0.05) * turnSpeed;
+
+        // cubic scaling:
+        double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
+        boolean quickTurn = Math.abs(drive) == 0;
+
+        double rawTurnCubed = Math.pow(rawTurn, 3);
+        double turn;
+        if (quickTurn) {
+            // super‑snappy but still protected
+            turn = turnLimiter.calculate(rawTurnCubed);
+        } else {
+            // gentle curvature
+            turn = rawTurnCubed;
+        }
+
+        turn = Math.min(turn, MAX_TURN_SPEED);
+
+        drive = (rawDrive == 0) ? 0 : drive;
+        turn = (rawTurn == 0) ? 0 : turn;
+
+        telemetry.addData("raw drive", driveInput);
+        telemetry.addData("deadzone drive", rawDrive);
+        telemetry.addData("final drive input", drive);
+
+
+        double leftTarget, rightTarget;
+        if (quickTurn) {
+            // on‑the‑spot pivot
+            leftTarget  = drive + turn;
+            rightTarget = drive - turn;
+        } else {  //TO DO CURVATURE IS BUGGED. SOMEHOW REVERSED CONTROLS WITH IT
+            // smooth curvature drive
+            turn = Math.min(MAX_TURN_DURING_CURVE, turn);
+            leftTarget  = drive - turn * Math.abs(drive) * 0.8;
+            rightTarget = drive + turn * Math.abs(drive) * 0.8;
+        }
+
+        telemetry.addData("use quickturn ", quickTurn);
+
 
         double avgInput = (leftTarget + rightTarget) / 2;
         double diff = Math.abs(leftTarget - rightTarget);
@@ -85,9 +146,11 @@ public class MoveRobotTank {
             headingHoldEnabled = false;
         }
 
+        //move forward only
         if (headingHoldEnabled) {
             double headingError = normalizeRadians(wantedHeading - currentHeading);
-            double correction = headingError * headingKp;
+            double rawCorrection = headingError * headingKp;
+            double correction = gyroLimiter.calculate(rawCorrection);
             leftTarget -= correction;
             rightTarget += correction;
         }
@@ -95,8 +158,12 @@ public class MoveRobotTank {
         leftTarget *= maxSpeed;
         rightTarget *= maxSpeed;
 
-        lastLeftPower = leftTarget;
-        lastRightPower = rightTarget;
+        //clip to range (-1 -> 1)
+        lastLeftPower  = Range.clip(leftTarget,  -1, 1);
+        lastRightPower = Range.clip(rightTarget, -1, 1);
+
+
+
 
         if (useVelocity) {
             leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);
