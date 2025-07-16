@@ -15,6 +15,7 @@ public class ClimbRope {
     private final Telemetry telemetry;
     private final double CLIMB_DOWN_RATE = 0.1;
     private final double STAY_ON_RATE = 0.1;
+    boolean resettingPosition = false;
 
     public ClimbRope(boolean protect, HardwareMap hardwareMap, Telemetry telemetry) {
         this.protect = protect;
@@ -62,7 +63,42 @@ public class ClimbRope {
         return null;
     }
 
+    // ROTATING TO POS DOESNT REALLY WORK
+    public void rotateToPosition(int targetTicks) {
+        resettingPosition = true;
+        leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftMotor.setTargetPosition(targetTicks);
+        rightMotor.setTargetPosition(targetTicks);
+
+        leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftMotor.setPower(1.0);
+        rightMotor.setPower(1.0);
+
+        // Wait until both motors reach target
+        while (leftMotor.isBusy() || rightMotor.isBusy()) {
+            telemetry.addData("Left Pos", leftMotor.getCurrentPosition());
+            telemetry.addData("Right Pos", rightMotor.getCurrentPosition());
+            telemetry.update();
+        }
+
+        // Stop motors
+        leftMotor.setPower(0);
+        rightMotor.setPower(0);
+
+        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        resettingPosition = false;
+    }
+
+
     public void ropeClimbing(int direction) {
+        if (resettingPosition) {return;}
+
         double leftPower, rightPower;
 
         if (direction == 1) {  // Climb up
