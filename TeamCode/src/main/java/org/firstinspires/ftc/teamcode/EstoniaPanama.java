@@ -34,15 +34,20 @@ import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
+import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
-    int climbingDirection = 0; // 0 - stop, 1 - up, -1 - down
+    int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down
+    int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
 
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
-        boolean xDrive = true;
+        boolean xDrive = false; // can toggle
+
+        ClimbRope climbRope = null;
+        boolean ropeClimbingAttached = false; // leave at false, it detects automatically
         /*
          * map objects
          * objectName = new ClassName()
@@ -57,7 +62,20 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
-        ClimbRope climbRope = new ClimbRope(protect, hardwareMap, telemetry);
+
+        try {
+            climbRope = new ClimbRope(protect, hardwareMap, telemetry);
+            ropeClimbingAttached = true;
+        } catch (Exception e) {
+            telemetry.log().add("ClimbRope hardware not found—rope climb disabled");
+        }
+
+        try {
+            collectBalls = new CollectBalls(protect, hardwareMap, telemetry);
+            collectBallsAttached = true;
+        } catch (Exception e) {
+            telemetry.log().add("Collecting balls hardware not found—collecting balls disabled");
+        }
 
 
         Presses gamepad1_left_trigger = new Presses();
@@ -117,16 +135,40 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             // Climbing logic with dpad
             if (gamepad1.dpad_up) {
-                climbingDirection = 1;  // climb up
+                climbingDirection = 2;  // climb up
             } else if (gamepad1.dpad_down) {
                 climbingDirection = -1; // climb down
             } else if (gamepad1.dpad_left) {
-                climbingDirection = 0;  // hold position
+                climbingDirection = 1;  // hold position
+            } else {
+                climbingDirection = 0;
             }
             // else: do nothing, keep previous direction (motor holds position)
 
             // Apply motor control
-            climbRope.ropeClimbing(climbingDirection);
+            if (ropeClimbingAttached) {
+                climbRope.ropeClimbing(climbingDirection);
+            }
+
+
+            if (gamepad1.dpad_right && ropeClimbingAttached) {
+                climbRope.rotateToPosition(240);
+            }
+
+            //Collecting balls
+            if (gamepad2.right_trigger > 0) {
+                collectingDirection = 1;  // suck in
+            } else if (gamepad2.left_trigger > 0) {
+                collectingDirection = -1; // let out
+            } else {
+                collectingDirection = 0;  // hold
+            }
+
+            // Apply motor control
+            if (collectBallsAttached) {
+                collectBalls.collectingBalls(collectingDirection);
+            }
+
 
 
 
