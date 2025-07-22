@@ -45,7 +45,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
         boolean xDrive = false; // can toggle
-
+        int storedHomePositionTicks = 0;
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
         CollectBalls collectBalls = null;
@@ -88,6 +88,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad2_cross = new Presses();
 
         Presses gamepad1_right_bumper = new Presses();
+        Presses gamepad1_left_bumper = new Presses();
 
         // Used to be the HeightToggleGroup, currently kept as a comment for future possible use.
         //Presses.ToggleGroup TempToggleGroup = new Presses.ToggleGroup();
@@ -151,9 +152,12 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection);
             }
+            if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)){
 
+                storedHomePositionTicks = climbRope.rememberHomePosition();
+            }
 
-            if (gamepad1.dpad_right && ropeClimbingAttached) {
+            if (gamepad1_dpad_right.pressed(gamepad1.dpad_right) && ropeClimbingAttached) {
                 climbRope.rotateToPosition(240);
             }
 
