@@ -35,11 +35,14 @@ import org.firstinspires.ftc.teamcode.mainModules.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
+import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
+
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
     int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down
     int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
+    int[] lastDriveMotorPositions = {0,0};
 
     @Override
     public void runOpMode() {
@@ -62,6 +65,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
          */
 
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
+        PoseEstimator poseEstimator = new PoseEstimator(imuManager);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
 
@@ -170,6 +174,23 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (collectBallsAttached) {
                 collectBalls.collectingBalls(collectingDirection);
             }
+
+            //poseestimator
+            if (gamepad1.circle) {
+                poseEstimator.resetPoseEstimate();
+            }
+
+            int[] curDriveMotorPositions = moveRobotTank.getEncoderPositions();
+
+            int deltaLeft = curDriveMotorPositions[0] - lastDriveMotorPositions[0];
+            int deltaRight = curDriveMotorPositions[1] - lastDriveMotorPositions[1];
+
+            lastDriveMotorPositions = curDriveMotorPositions.clone();
+
+            poseEstimator.update(deltaLeft, deltaRight);
+
+
+            telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
 
 
 
