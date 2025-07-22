@@ -13,7 +13,7 @@ public class ClimbRope {
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
-    private final double CLIMB_DOWN_RATE = 0.1;
+    private final double CLIMB_DOWN_RATE = 0.4;
     private final double STAY_ON_RATE = 0.1;
     boolean resettingPosition = false;
 
@@ -34,8 +34,8 @@ public class ClimbRope {
         leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public enum RopeID {
@@ -65,7 +65,7 @@ public class ClimbRope {
 
     // ROTATING TO POS DOESNT REALLY WORK
     public void rotateToPosition(int targetTicks) {
-        resettingPosition = true;
+        /*resettingPosition = true;
         leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -92,7 +92,7 @@ public class ClimbRope {
         leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        resettingPosition = false;
+        resettingPosition = false;*/
     }
 
 
@@ -101,13 +101,13 @@ public class ClimbRope {
 
         double leftPower, rightPower;
 
-        if (direction == 1) {  // Climb up
+        if (direction == 2) {  // Climb up
             leftPower = 1.0;
             rightPower = 1.0;
         } else if (direction == -1) {  // Climb down slowly
             leftPower = -CLIMB_DOWN_RATE;
             rightPower = -CLIMB_DOWN_RATE;
-        } else if (direction == 2) {
+        } else if (direction == 1) {
             leftPower = STAY_ON_RATE;
             rightPower = STAY_ON_RATE;
         } else {
