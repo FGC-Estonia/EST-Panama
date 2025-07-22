@@ -73,8 +73,8 @@ public class ClimbRope {
         return null;
     }
 
-    // ROTATING TO POS DOESNT REALLY WORK
-    public void rotateToPosition(int targetTicks) {
+    // ROTATING TO POS DOESN'T REALLY WORK
+    public void rotateToHome() {
         int currentFullPosition = leftMotor.getCurrentPosition();
         int currentAngularOffset = currentFullPosition % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
 
@@ -99,6 +99,41 @@ public class ClimbRope {
         int targetFullPosition = currentFullPosition + deltaAngle;
 
         rotateToPosition(targetFullPosition);
+    }
+    public void rotateToPosition(int targetTicks) {
+        // This tells the motor controller to use the encoders to reach a specific target.
+        leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // The motors will try to reach this absolute encoder count.
+        leftMotor.setTargetPosition(targetTicks);
+        rightMotor.setTargetPosition(targetTicks); // Assuming both motors move to the same target
+
+        // This power (from 0.0 to 1.0) acts as the maximum speed the motors will use
+        // to try and reach their target. The controller will vary the power to slow down
+        // as it approaches the target.
+        leftMotor.setPower(1.0); // Full power for movement
+        rightMotor.setPower(1.0);
+
+        // Wait until the motors reach their target or a timeout occurs.
+        long startTime = System.currentTimeMillis();
+        long timeoutMillis = 10000; // 10 seconds timeout. Adjust this value based on your mechanism's speed and travel distance.
+
+        // Loop while the OpMode is active, at least one motor is still moving, AND the timeout hasn't been reached.
+        while ((leftMotor.isBusy() || rightMotor.isBusy()) && (System.currentTimeMillis() - startTime < timeoutMillis)) {
+            // Provide real-time feedback on the Driver Station for debugging.
+            telemetry.addData("Left Target", leftMotor.getTargetPosition());
+            telemetry.addData("Right Target", rightMotor.getTargetPosition());
+            telemetry.update();
+        }
+
+        // Stop the motors once they reach the target or the loop exits (e.g., due to timeout).
+        leftMotor.setPower(0);
+        rightMotor.setPower(0);
+
+        // Set motors back to RUN_WITHOUT_ENCODER mode.
+        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     public int rememberHomePosition(){
         storedHomePositionTicks = leftMotor.getCurrentPosition() % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
