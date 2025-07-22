@@ -185,4 +185,11 @@ public class MoveRobotTank {
         while (angle < -Math.PI) angle += 2 * Math.PI;
         return angle;
     }
+
+    public int[] getEncoderPositions() {
+        return new int[]{
+                leftDrive.getCurrentPosition(),
+                rightDrive.getCurrentPosition()
+        };
+    }
 }
