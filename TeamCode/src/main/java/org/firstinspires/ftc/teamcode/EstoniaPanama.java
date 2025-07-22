@@ -98,10 +98,10 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         //Presses gamepad2_square = new Presses(TempToggleGroup);
         //Presses gamepad2_circle = new Presses(TempToggleGroup);
 
-        Presses gamepad1_dpad_left = new Presses();
-        Presses gamepad1_dpad_right = new Presses();
-        Presses gamepad1_dpad_up = new Presses();
-        Presses gamepad1_dpad_down = new Presses();
+        Presses gamepad2_dpad_left = new Presses();
+        Presses gamepad2_dpad_right = new Presses();
+        Presses gamepad2_dpad_up = new Presses();
+        Presses gamepad2_dpad_down = new Presses();
 
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
@@ -137,11 +137,11 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             int climbingDirection = 0;
 
             // Climbing logic with dpad
-            if (gamepad1.dpad_up) {
+            if (gamepad2.dpad_up) {
                 climbingDirection = 2;  // climb up
-            } else if (gamepad1.dpad_down) {
+            } else if (gamepad2.dpad_down) {
                 climbingDirection = -1; // climb down
-            } else if (gamepad1.dpad_left) {
+            } else if (gamepad2.dpad_left) {
                 climbingDirection = 1;  // hold position
             } else {
                 climbingDirection = 0;
@@ -157,7 +157,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 storedHomePositionTicks = climbRope.rememberHomePosition();
             }
 
-            if (gamepad1_dpad_right.pressed(gamepad1.dpad_right) && ropeClimbingAttached) {
+            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
                 climbRope.rotateToHome();
             }
 
