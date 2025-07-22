@@ -182,7 +182,7 @@ public class MoveRobotTank {
         //move forward only
         if (headingHoldEnabled) {
             double headingError = normalizeRadians(wantedHeading - currentHeading);
-            double rawCorrection = headingError * HEADING_KP;
+            double rawCorrection = headingError * headingKp;
             double correction = gyroLimiter.calculate(rawCorrection);
             leftTargetPower -= correction;
             rightTargetPower += correction;
