@@ -97,7 +97,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         //Presses gamepad2_triangle = new Presses(TempToggleGroup);
         //Presses gamepad2_square = new Presses(TempToggleGroup);
         //Presses gamepad2_circle = new Presses(TempToggleGroup);
-
+        Presses gamepad2_left_bumper = new Presses();
         Presses gamepad2_dpad_left = new Presses();
         Presses gamepad2_dpad_right = new Presses();
         Presses gamepad2_dpad_up = new Presses();
@@ -152,7 +152,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection);
             }
-            if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
+            if (gamepad2_left_bumper.pressed(gamepad2.left_bumper)) {
 
                 storedHomePositionTicks = climbRope.rememberHomePosition();
             }
