@@ -16,6 +16,16 @@ public class ClimbRope {
     private final double CLIMB_DOWN_RATE = 0.4;
     private final double STAY_ON_RATE = 0.1;
     boolean resettingPosition = false;
+    private int storedHomePositionTicks = 0;
+    // Define constants for your motor and gearing
+    private static final double REV_HD_HEX_MOTOR_TICKS_PER_MOTOR_REV = 28.0; // From REV HD Hex Motor spec
+    private static final double GEAR_RATIO_1 = 5.23;
+    private static final double GEAR_RATIO_2 = 3.61;
+    private static final double GEAR_RATIO_3 = 3.61;
+
+    // Calculate the total ticks per revolution for the final output shaft
+    private static final double TOTAL_GEAR_RATIO = GEAR_RATIO_1 * GEAR_RATIO_2 * GEAR_RATIO_3;
+    private static final int TICKS_PER_OUTPUT_SHAFT_REVOLUTION = (int) (REV_HD_HEX_MOTOR_TICKS_PER_MOTOR_REV * TOTAL_GEAR_RATIO);
 
     public ClimbRope(boolean protect, HardwareMap hardwareMap, Telemetry telemetry) {
         this.protect = protect;
@@ -34,8 +44,8 @@ public class ClimbRope {
         leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        //leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        //rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public enum RopeID {
@@ -63,38 +73,75 @@ public class ClimbRope {
         return null;
     }
 
-    // ROTATING TO POS DOESNT REALLY WORK
+    // ROTATING TO POS DOESN'T REALLY WORK
+    public void rotateToHome() {
+        int currentFullPosition = leftMotor.getCurrentPosition();
+        int currentAngularOffset = currentFullPosition % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+
+        // Handle negative currentAngularOffset
+        if (currentAngularOffset < 0) {
+            currentAngularOffset += TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        }
+
+        // Calculate the difference needed to reach the redDotHomeAngularOffset
+        int deltaAngle = storedHomePositionTicks - currentAngularOffset;
+
+        // Adjust deltaAngle for the shortest path around the circle
+        // Example: If current is 270 degrees and target is 10 degrees, moving +100 degrees
+        // is shorter than -260 degrees.
+        if (deltaAngle > TICKS_PER_OUTPUT_SHAFT_REVOLUTION / 2) {
+            deltaAngle -= TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        } else if (deltaAngle < -TICKS_PER_OUTPUT_SHAFT_REVOLUTION / 2) {
+            deltaAngle += TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        }
+
+        // The new target is the current full position plus this small angular adjustment
+        int targetFullPosition = currentFullPosition + deltaAngle;
+
+        rotateToPosition(targetFullPosition);
+    }
     public void rotateToPosition(int targetTicks) {
-        /*resettingPosition = true;
-        leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        leftMotor.setTargetPosition(targetTicks);
-        rightMotor.setTargetPosition(targetTicks);
-
+        // This tells the motor controller to use the encoders to reach a specific target.
         leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftMotor.setPower(1.0);
+        // The motors will try to reach this absolute encoder count.
+        leftMotor.setTargetPosition(targetTicks);
+        rightMotor.setTargetPosition(targetTicks); // Assuming both motors move to the same target
+
+        // This power (from 0.0 to 1.0) acts as the maximum speed the motors will use
+        // to try and reach their target. The controller will vary the power to slow down
+        // as it approaches the target.
+        leftMotor.setPower(1.0); // Full power for movement
         rightMotor.setPower(1.0);
 
-        // Wait until both motors reach target
-        while (leftMotor.isBusy() || rightMotor.isBusy()) {
-            telemetry.addData("Left Pos", leftMotor.getCurrentPosition());
-            telemetry.addData("Right Pos", rightMotor.getCurrentPosition());
+        // Wait until the motors reach their target or a timeout occurs.
+        long startTime = System.currentTimeMillis();
+        long timeoutMillis = 10000; // 10 seconds timeout. Adjust this value based on your mechanism's speed and travel distance.
+
+        // Loop while the OpMode is active, at least one motor is still moving, AND the timeout hasn't been reached.
+        while ((leftMotor.isBusy() || rightMotor.isBusy()) && (System.currentTimeMillis() - startTime < timeoutMillis)) {
+            // Provide real-time feedback on the Driver Station for debugging.
+            telemetry.addData("Left Target", leftMotor.getTargetPosition());
+            telemetry.addData("Right Target", rightMotor.getTargetPosition());
             telemetry.update();
         }
 
-        // Stop motors
+        // Stop the motors once they reach the target or the loop exits (e.g., due to timeout).
         leftMotor.setPower(0);
         rightMotor.setPower(0);
 
+        // Set motors back to RUN_WITHOUT_ENCODER mode.
         leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        resettingPosition = false;*/
     }
-
+    public int rememberHomePosition(){
+        storedHomePositionTicks = leftMotor.getCurrentPosition() % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        if (storedHomePositionTicks < 0) {
+            storedHomePositionTicks += TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        }
+    return storedHomePositionTicks;
+    }
 
     public void ropeClimbing(int direction) {
         if (resettingPosition) {return;}

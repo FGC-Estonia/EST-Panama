@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
 public class MoveRobot {
 
@@ -66,21 +67,34 @@ public class MoveRobot {
 
     }
 
-    // the main function for moving the robot
+    /**
+     * Controls the robot's movement based on joystick inputs and current heading.
+     * Can operate in field-centric or robot-centric mode.
+     *
+     * @param heading Current robot heading in radians (e.g., from IMU).
+     * @param drive Forward/backward input (-1.0 to 1.0).
+     * @param strafe Left/right strafe input (-1.0 to 1.0) - Does tank strafe though?
+     * @param turn Turning input (-1.0 to 1.0).
+     * @param fieldCentric True if movement should be relative to the field, false for robot-centric.
+     * @param driveGear The selected drive gear (LOW, MEDIUM, HIGH) determining max speed.
+     */
     public void move(double heading, double drive, double strafe, double turn,
                      boolean fieldCentric,
-                     boolean speed1, boolean speed2, boolean speed3
+                     DriveGear driveGear
     ) {
-        if (speed1){
+        // Old code which sets the same maxSpeed as the driveGear - can be switched out with the current version
+        /*if (driveGear.maxSpeed == 0.35) {
             maxSpeed=0.25;
             telemetry.addData("Gear", "speed1");
-        }if (speed2){
+        }else if (driveGear.maxSpeed == 0.6) {
             maxSpeed=0.5;
             telemetry.addData("Gear", "speed2");
-        }if (speed3){
+        }else if (driveGear.maxSpeed == 1) {
             maxSpeed=1;
             telemetry.addData("Gear", "speed3");
-        }
+        } */
+        this.maxSpeed = driveGear.maxSpeed;
+        telemetry.addData("Gear", driveGear.telemetryName);
 
         double x;
         double y;
