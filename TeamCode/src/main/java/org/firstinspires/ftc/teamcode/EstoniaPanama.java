@@ -35,6 +35,7 @@ import org.firstinspires.ftc.teamcode.mainModules.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
+import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
@@ -69,14 +70,14 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
             ropeClimbingAttached = true;
         } catch (Exception e) {
-            telemetry.log().add("ClimbRope hardware not found—rope climb disabled");
+            telemetry.log().add("ClimbRope hardware not found — rope climb disabled");
         }
 
         try {
             collectBalls = new CollectBalls(protect, hardwareMap, telemetry);
             collectBallsAttached = true;
         } catch (Exception e) {
-            telemetry.log().add("Collecting balls hardware not found—collecting balls disabled");
+            telemetry.log().add("Collecting balls hardware not found — collecting balls disabled");
         }
 
 
@@ -182,23 +183,28 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 telemetry.addData("Field Centric", fieldCentric);
                 telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
                 telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
-                boolean speed1 = gamepad1_cross.toggle(gamepad1.cross);
-                boolean speed2 = gamepad1_square.toggle(gamepad1.square);
-                boolean speed3 = gamepad1_triangle.toggle(gamepad1.triangle);
+
+                DriveGear currentDriveGear = DriveGear.LOW;
+                if (gamepad1_cross.returnToggleState()) {
+                    currentDriveGear = DriveGear.LOW;
+                } else if (gamepad1_square.returnToggleState()) {
+                    currentDriveGear = DriveGear.MEDIUM;
+                } else if (gamepad1_triangle.returnToggleState()) {
+                    currentDriveGear = DriveGear.HIGH;
                 
 
                 if (!xDrive) {
                     moveRobotTank.drive(
                             imuAngle, imuPitch,
                             frontBack, turn,
-                            speed1, speed2, speed3
+                            currentDriveGear
                     );
                 } else {
                     moveRobot.move(
                             imuAngle,
                             frontBack, leftRight, turn,
                             fieldCentric,
-                            speed1, speed2, speed3
+                            currentDriveGear
                     );
                 }
                 telemetry.update();

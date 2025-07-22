@@ -8,29 +8,71 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.util.SlewRateLimiter;
 
-public class MoveRobotTank {
 
+
+public class MoveRobotTank {
+    // This class is responsible for the movement of a robot with a tank drivebase
+
+    // Declaration of variables
+    // --- Hardware Objects ---
     private DcMotorEx leftDrive = null;
     private DcMotorEx rightDrive = null;
+
+    // --- System References ---
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
+
+    // --- Configuration Flags ---
     private final boolean useVelocity;
-    private final boolean protect;
-    private double maxSpeed = 1.0;
-    private double turnSpeed = 0.9;
-    private double MAX_TURN_SPEED = 0.5;
-    private double MAX_TURN_DURING_CURVE = 0.2;
-    private double lastLeftPower = 0;
-    private double lastRightPower = 0;
-    private final double MAX_VELOCITY = 1972.92;
+    private final boolean protect; // Currently unused, consider removing or implementing.
+
+    // --- Drive Constants ---
+    private static final double MAX_TURN_SPEED = 0.5;
+    private static final double MAX_TURN_DURING_CURVE = 0.2;
+    private static final double MOTOR_DEADZONE = 0.05; // Joystick deadband
+    private static final double STATIONARY_TURN_THRESHOLD = 0.05;
+    private static final double CURVATURE_DRIVE_FACTOR = 0.8;
+    private static final double MAX_MOTOR_VELOCITY_TPS = 1972.92;
+
+    // --- Slew Rate Limiter Constants ---
+    private static final double DRIVER_SLEW_RATE = 4.0;
+    private static final double TURN_SLEW_RATE = 20.0;
+    private static final double GYRO_SLEW_RATE = 4.0;
+
+    // --- Slew Rate Limiter Instances ---
     private SlewRateLimiter driverLimiter;
     private SlewRateLimiter turnLimiter;
     private SlewRateLimiter gyroLimiter;
 
+    // --- Heading Hold Variables ---
     private double wantedHeading = 0;
     private boolean headingHoldEnabled = false;
-    private final double headingKp = 0.25; // Tunable: radians -> motor power
+    private final double HEADING_KP = 0.25; // Tunable: radians -> motor power (renamed to constant)
 
+    // --- Current State Variables (Dynamic) ---
+    private double maxSpeed = 1.0; // Dynamic, set by DriveGear
+    private double turnSpeed = 0.9; // Dynamic, set by DriveGear
+    private double lastLeftPower = 0;
+    private double lastRightPower = 0;
+
+
+     // Defines the different drive speed gears.
+
+    public enum DriveGear {
+        LOW(0.35, 0.7, "Low"),
+        MEDIUM(0.6, 0.8, "Medium"),
+        HIGH(1.0, 0.9, "High");
+
+        public final double maxSpeed;
+        public final double turnSpeed;
+        public final String telemetryName;
+
+        DriveGear(double maxSpeed, double turnSpeed, String telemetryName) {
+            this.maxSpeed = maxSpeed;
+            this.turnSpeed = turnSpeed;
+            this.telemetryName = telemetryName;
+        }
+    }
     public MoveRobotTank(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity) {
         this.protect = protect;
         this.hardwareMap = hardwareMap;
@@ -49,11 +91,11 @@ public class MoveRobotTank {
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        driverLimiter = new SlewRateLimiter(4);
-        turnLimiter = new SlewRateLimiter(20);
-        gyroLimiter = new SlewRateLimiter(4);
+        driverLimiter = new SlewRateLimiter(DRIVER_SLEW_RATE);
+        turnLimiter = new SlewRateLimiter(TURN_SLEW_RATE);
+        gyroLimiter = new SlewRateLimiter(GYRO_SLEW_RATE);
 
-
+        // Assesses whether or not the motor should run using velocity or power
         if (useVelocity) {
             leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -63,7 +105,7 @@ public class MoveRobotTank {
         }
     }
 
-    //ignore, when joystick has moved very slightly
+    // Ignores input when the joystick moves very slightly
     private double applyDeadzone(double input, double deadband) {
         if (Math.abs(input) < deadband) return 0.0;
         return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
@@ -73,35 +115,26 @@ public class MoveRobotTank {
 
 
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
-                      boolean speed1, boolean speed2, boolean speed3) {
+                      DriveGear requestedGear) {
 
-        if (speed1) {
-            maxSpeed = 0.35;
-            turnSpeed = 0.7;
-            telemetry.addData("Gear", "Low");
-        } else if (speed2) {
-            maxSpeed = 0.6;
-            turnSpeed = 0.8;
-            telemetry.addData("Gear", "Medium");
-        } else if (speed3) {
-            maxSpeed = 1.0;
-            turnSpeed = 0.9;
-            telemetry.addData("Gear", "High");
-        }
+        // Set speed parameters based on the requested gear
+        this.maxSpeed = requestedGear.maxSpeed;
+        this.turnSpeed = requestedGear.turnSpeed;
+        telemetry.addData("Gear", requestedGear.telemetryName);
 
 
 
         // before limiting:
-        double rawDrive = applyDeadzone(driveInput, 0.05);
-        double rawTurn  = applyDeadzone(turnInput, 0.05) * turnSpeed;
+        double rawDrive = applyDeadzone(driveInput, MOTOR_DEADZONE);
+        double rawTurn  = applyDeadzone(turnInput, MOTOR_DEADZONE) * turnSpeed;
 
         // cubic scaling:
         double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
-        boolean quickTurn = Math.abs(drive) == 0;
+        boolean stationaryTurn = Math.abs(drive) < STATIONARY_TURN_THRESHOLD;
 
         double rawTurnCubed = Math.pow(rawTurn, 3);
         double turn;
-        if (quickTurn) {
+        if (stationaryTurn) {
             // super‑snappy but still protected
             turn = turnLimiter.calculate(rawTurnCubed);
         } else {
@@ -119,23 +152,23 @@ public class MoveRobotTank {
         telemetry.addData("final drive input", drive);
 
 
-        double leftTarget, rightTarget;
-        if (quickTurn) {
+        double leftTargetPower, rightTargetPower;
+        if (stationaryTurn) {
             // on‑the‑spot pivot
-            leftTarget  = drive + turn;
-            rightTarget = drive - turn;
-        } else {  //TO DO CURVATURE IS BUGGED. SOMEHOW REVERSED CONTROLS WITH IT
+            leftTargetPower  = drive + turn;
+            rightTargetPower = drive - turn;
+        } else {  //TO DO CURVATURE IS BUGGED. SOMEHOW REVERSED CONTROLS WITH IT -- Possibly fixed, haven't tested
             // smooth curvature drive
             turn = Math.min(MAX_TURN_DURING_CURVE, turn);
-            leftTarget  = drive - turn * Math.abs(drive) * 0.8;
-            rightTarget = drive + turn * Math.abs(drive) * 0.8;
+            leftTargetPower  = drive + turn * Math.abs(drive) * CURVATURE_DRIVE_FACTOR;
+            rightTargetPower = drive - turn * Math.abs(drive) * CURVATURE_DRIVE_FACTOR;
         }
 
-        telemetry.addData("use quickturn ", quickTurn);
+        telemetry.addData("use stationaryTurn ", stationaryTurn);
 
-
-        double avgInput = (leftTarget + rightTarget) / 2;
-        double diff = Math.abs(leftTarget - rightTarget);
+        // Calculates and checks conditions for holding heading
+        double avgInput = (leftTargetPower + rightTargetPower) / 2;
+        double diff = Math.abs(leftTargetPower - rightTargetPower);
 
         if (diff < 0.05 && Math.abs(avgInput) > 0.05) {
             if (!headingHoldEnabled) {
@@ -151,23 +184,24 @@ public class MoveRobotTank {
             double headingError = normalizeRadians(wantedHeading - currentHeading);
             double rawCorrection = headingError * headingKp;
             double correction = gyroLimiter.calculate(rawCorrection);
-            leftTarget -= correction;
-            rightTarget += correction;
+            leftTargetPower -= correction;
+            rightTargetPower += correction;
         }
 
-        leftTarget *= maxSpeed;
-        rightTarget *= maxSpeed;
+        // Applies maxSpeed to the calculated target powers
+        leftTargetPower *= maxSpeed;
+        rightTargetPower *= maxSpeed;
 
         //clip to range (-1 -> 1)
-        lastLeftPower  = Range.clip(leftTarget,  -1, 1);
-        lastRightPower = Range.clip(rightTarget, -1, 1);
+        lastLeftPower  = Range.clip(leftTargetPower,  -1, 1);
+        lastRightPower = Range.clip(rightTargetPower, -1, 1);
 
 
 
 
         if (useVelocity) {
-            leftDrive.setVelocity(lastLeftPower * MAX_VELOCITY);
-            rightDrive.setVelocity(lastRightPower * MAX_VELOCITY);
+            leftDrive.setVelocity(lastLeftPower * MAX_MOTOR_VELOCITY_TPS);
+            rightDrive.setVelocity(lastRightPower * MAX_MOTOR_VELOCITY_TPS);
         } else {
             leftDrive.setPower(lastLeftPower);
             rightDrive.setPower(lastRightPower);
