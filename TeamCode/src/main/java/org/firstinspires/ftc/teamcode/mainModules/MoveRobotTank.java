@@ -203,13 +203,34 @@ public class MoveRobotTank {
         lastRightPower = Range.clip(rightTargetPower, -1, 1);
 
 
-        //force stop when no input is detected
-        if (rawTurn == 0 && rawDrive == 0) {
+        // --- Auto‑brake when sticks are released but wheels still spinning --- //
+        if (rawDrive == 0 && rawTurn == 0) {
+            // read velocities (tps = ticks per second)
+            double leftVel  = leftDrive.getVelocity();
+            double rightVel = rightDrive.getVelocity();
+
+            // threshold below which we consider “stopped”
+            double stopThreshold = 100.0;
+
+            if (Math.abs(leftVel) > stopThreshold || Math.abs(rightVel) > stopThreshold) {
+                // compute brief brake power proportional to velocity
+                double brakePowerLeft  = -Math.signum(leftVel)  * 0.2;
+                double brakePowerRight = -Math.signum(rightVel) * 0.2;
+
+                leftDrive.setPower(brakePowerLeft);
+                rightDrive.setPower(brakePowerRight);
+
+                // don’t update lastLeft/lastRight yet, let brake pulse
+                return;
+            }
+            // else: truly stopped
             lastLeftPower = 0;
             lastRightPower = 0;
             leftDrive.setPower(0);
             rightDrive.setPower(0);
+            return;
         }
+
 
         if (useVelocity) {
             leftDrive.setVelocity(lastLeftPower * MAX_MOTOR_VELOCITY_TPS);
