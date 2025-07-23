@@ -156,9 +156,9 @@ public class MoveRobotTank {
             rightTargetPower = drive - turn;
         } else {  //TO DO CURVATURE IS BUGGED. SOMEHOW REVERSED CONTROLS WITH IT -- Possibly fixed, haven't tested
             // smooth curvature drive
-            turn = Math.min(MAX_TURN_DURING_CURVE, turn);
-            leftTargetPower  = drive + turn * Math.abs(drive) * CURVATURE_DRIVE_FACTOR;
-            rightTargetPower = drive - turn * Math.abs(drive) * CURVATURE_DRIVE_FACTOR;
+
+            leftTargetPower  = drive + turn * Math.abs(drive);
+            rightTargetPower = drive - turn * Math.abs(drive);
         }
 
         telemetry.addData("use stationaryTurn ", stationaryTurn);
@@ -194,7 +194,11 @@ public class MoveRobotTank {
         lastRightPower = Range.clip(rightTargetPower, -1, 1);
 
 
-
+        //force stop when no input is detected
+        if (rawTurn == 0 && rawDrive == 0) {
+            lastLeftPower = 0;
+            lastRightPower = 0;
+        }
 
         if (useVelocity) {
             leftDrive.setVelocity(lastLeftPower * MAX_MOTOR_VELOCITY_TPS);
