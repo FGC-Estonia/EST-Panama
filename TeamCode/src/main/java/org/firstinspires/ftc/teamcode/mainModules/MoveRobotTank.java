@@ -152,9 +152,9 @@ public class MoveRobotTank {
         double leftTargetPower, rightTargetPower;
 
         if (stationaryTurn) {
-            // on‑the‑spot pivot
-            leftTargetPower  = drive + turn;
-            rightTargetPower = drive - turn;
+            // on‑the‑spot pivot -- UNTESTED PARABOLE SCALING
+            leftTargetPower  = drive + turn * Math.pow(turn / MAX_TURN_SPEED, 2);
+            rightTargetPower = drive - turn * Math.pow(turn / MAX_TURN_SPEED, 2);
         } else {
             // smooth curvature drive
             // Original: turn = Math.min(MAX_TURN_DURING_CURVE, turn); // Consider removing or adjusting how this is used if it's too restrictive
