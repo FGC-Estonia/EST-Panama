@@ -198,6 +198,8 @@ public class MoveRobotTank {
         if (rawTurn == 0 && rawDrive == 0) {
             lastLeftPower = 0;
             lastRightPower = 0;
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
         }
 
         if (useVelocity) {
