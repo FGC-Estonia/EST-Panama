@@ -48,7 +48,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
-        boolean xDrive = false; // can toggle
+        boolean xDrive = false; // can toggle between xDrive and Tank drive
         int storedHomePositionTicks = 0;
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
