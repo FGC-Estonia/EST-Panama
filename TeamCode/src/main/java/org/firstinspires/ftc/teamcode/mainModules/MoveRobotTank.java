@@ -133,10 +133,10 @@ public class MoveRobotTank {
         double turn;
         if (stationaryTurn) {
             // super‑snappy but still protected
-            turn = turnLimiter.calculate(rawTurnCubed);
+            turn = rawTurnCubed;
         } else {
             // gentle curvature
-            turn = rawTurnCubed;
+            turn = turnLimiter.calculate(rawTurnCubed);
         }
 
         turn = Math.min(turn, MAX_TURN_SPEED);
