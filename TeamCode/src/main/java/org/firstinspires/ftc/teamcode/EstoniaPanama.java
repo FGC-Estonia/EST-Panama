@@ -43,7 +43,7 @@ import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
     int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down
     int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
-    int[] lastDriveMotorPositions = {0,0};
+    int[] lastDriveMotorPositions = {0, 0};
 
     @Override
     public void runOpMode() {
@@ -116,7 +116,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         gamepad1_triangle.setToggleTrue();//set default value
 
 
-
         // double maxRaisedVelocity; // This variable is declared but unused, and causes a warning. Removed for cleaner code unless it has a future use.
 
         telemetry.update();
@@ -130,16 +129,16 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
 
             //move robot
-                //position automatically when pressed
+            //position automatically when pressed
 
-                double imuAngle = imuManager.getYawRadians();
-                double imuPitch = imuManager.getPitchRadians();
-                //double leftRight = gamepad1.right_stick_x;  //used for tank drive
-                double leftRight = gamepad1.left_stick_x;
-                double frontBack = -gamepad1.left_stick_y;
-                double turn = gamepad1.right_stick_x;
-                boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
-                int climbingDirection = 0;
+            double imuAngle = imuManager.getYawRadians();
+            double imuPitch = imuManager.getPitchRadians();
+            //double leftRight = gamepad1.right_stick_x;  //used for tank drive
+            double leftRight = gamepad1.left_stick_x;
+            double frontBack = -gamepad1.left_stick_y;
+            double turn = gamepad1.right_stick_x;
+            boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
+            int climbingDirection = 0;
 
             // Climbing logic with dpad
             if (gamepad1.dpad_up) {
@@ -157,7 +156,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection);
             }
-            if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)){
+            if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
 
                 storedHomePositionTicks = climbRope.rememberHomePosition();
             }
@@ -198,25 +197,22 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
 
 
-
-
-
             if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
-                    gamepad1.rumble(1, 1, 1000);
-                }
+                gamepad1.rumble(1, 1, 1000);
+            }
 
-                telemetry.addData("Field Centric", fieldCentric);
-                telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
-                telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
+            telemetry.addData("Field Centric", fieldCentric);
+            telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
+            telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
 
-                DriveGear currentDriveGear = DriveGear.LOW;
-                if (gamepad1_cross.returnToggleState()) {
-                    currentDriveGear = DriveGear.LOW;
-                } else if (gamepad1_square.returnToggleState()) {
-                    currentDriveGear = DriveGear.MEDIUM;
-                } else if (gamepad1_triangle.returnToggleState()) {
-                    currentDriveGear = DriveGear.HIGH;
-                
+            DriveGear currentDriveGear = DriveGear.LOW;
+            if (gamepad1_cross.returnToggleState()) {
+                currentDriveGear = DriveGear.LOW;
+            } else if (gamepad1_square.returnToggleState()) {
+                currentDriveGear = DriveGear.MEDIUM;
+            } else if (gamepad1_triangle.returnToggleState()) {
+                currentDriveGear = DriveGear.HIGH;
+
 
                 if (!xDrive) {
                     moveRobotTank.drive(

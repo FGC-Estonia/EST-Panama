@@ -110,10 +110,7 @@ public class MoveRobotTank {
         if (Math.abs(input) < deadband) return 0.0;
         return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
     }
-
-
-
-
+    
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
                       DriveGear requestedGear) {
 
@@ -182,7 +179,7 @@ public class MoveRobotTank {
         //move forward only
         if (headingHoldEnabled) {
             double headingError = normalizeRadians(wantedHeading - currentHeading);
-            double rawCorrection = headingError * headingKp;
+            double rawCorrection = headingError * HEADING_KP;
             double correction = gyroLimiter.calculate(rawCorrection);
             leftTargetPower -= correction;
             rightTargetPower += correction;
