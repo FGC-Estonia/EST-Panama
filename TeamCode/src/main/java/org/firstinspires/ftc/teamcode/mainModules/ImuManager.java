@@ -18,6 +18,7 @@ public class ImuManager {
     private final Telemetry telemetry;
 
     private final boolean protect;
+    private final boolean xDrive;
 
     public void initImu(){
         if (protect) {
@@ -25,8 +26,16 @@ public class ImuManager {
                 // Initializing imu to avoid errors
                 imu = hardwareMap.get(IMU.class, "imu");
 
-                RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-                RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
+                RevHubOrientationOnRobot.LogoFacingDirection logoDirection;
+                RevHubOrientationOnRobot.UsbFacingDirection usbDirection;
+
+                if (xDrive) {
+                    logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+                    usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+                } else {
+                    logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+                    usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+                }
 
                 RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -53,10 +62,11 @@ public class ImuManager {
         }
     }
 
-    public ImuManager(boolean protect, HardwareMap hardwareMap, Telemetry telemetry) {
+    public ImuManager(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean xDrive) {
         this.protect = protect;
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+        this.xDrive = xDrive;
         initImu();
     }
 

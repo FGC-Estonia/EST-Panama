@@ -65,7 +65,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
          * RunMotor runMotor = new RunMotor(hardwareMap, telemetry);
          */
 
-        ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry);
+        ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry, xDrive);
         PoseEstimator poseEstimator = new PoseEstimator(imuManager);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
@@ -120,7 +120,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
         telemetry.update();
         waitForStart(); //everything has been initialized, waiting for the start button
-
         while (opModeIsActive()) { // main loop
 
             //gyro reset
