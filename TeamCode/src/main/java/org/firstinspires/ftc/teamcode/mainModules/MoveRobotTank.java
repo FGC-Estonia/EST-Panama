@@ -133,10 +133,10 @@ public class MoveRobotTank {
         double turn;
         if (stationaryTurn) {
             // super‑snappy but still protected
-            turn = rawTurnCubed;
+            turn = turnLimiter.calculate(rawTurnCubed);
         } else {
             // gentle curvature
-            turn = turnLimiter.calculate(rawTurnCubed);
+            turn = rawTurnCubed;
         }
 
         turn = Math.min(turn, MAX_TURN_SPEED);
@@ -150,15 +150,24 @@ public class MoveRobotTank {
 
 
         double leftTargetPower, rightTargetPower;
+
         if (stationaryTurn) {
             // on‑the‑spot pivot
             leftTargetPower  = drive + turn;
             rightTargetPower = drive - turn;
-        } else {  //TO DO CURVATURE IS BUGGED. SOMEHOW REVERSED CONTROLS WITH IT -- Possibly fixed, haven't tested
+        } else {
             // smooth curvature drive
+            // Original: turn = Math.min(MAX_TURN_DURING_CURVE, turn); // Consider removing or adjusting how this is used if it's too restrictive
+            // Simplified curvature drive to ensure turn influence even at low drive speeds
+            leftTargetPower  = drive + turn;
+            rightTargetPower = drive - turn;
 
-            leftTargetPower  = drive + turn * Math.abs(drive);
-            rightTargetPower = drive - turn * Math.abs(drive);
+            // Scale down if powers exceed 1.0, preserving the turn ratio
+            double maxAbsPower = Math.max(Math.abs(leftTargetPower), Math.abs(rightTargetPower));
+            if (maxAbsPower > 1.0) {
+                leftTargetPower /= maxAbsPower;
+                rightTargetPower /= maxAbsPower;
+            }
         }
 
         telemetry.addData("use stationaryTurn ", stationaryTurn);
