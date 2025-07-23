@@ -13,7 +13,7 @@ public class ClimbRope {
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
-    private final double CLIMB_DOWN_RATE = 0.4;
+    private final double CLIMB_DOWN_RATE = 0.2;
     private final double STAY_ON_RATE = 0.1;
     boolean resettingPosition = false;
     private int storedHomePositionTicks = 0;

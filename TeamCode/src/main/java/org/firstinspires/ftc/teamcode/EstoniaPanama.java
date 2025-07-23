@@ -142,15 +142,17 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             double frontBack = -gamepad1.left_stick_y;
             double turn = gamepad1.right_stick_x;
             boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
+            boolean holdingOnRope = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
             int climbingDirection = 0;
 
             // Climbing logic with dpad
-            if (gamepad2.dpad_up) {
+            if (holdingOnRope) {
+                climbingDirection = 1;  // hold position
+            }
+            else if (gamepad2.dpad_up) {
                 climbingDirection = 2;  // climb up
             } else if (gamepad2.dpad_down) {
                 climbingDirection = -1; // climb down
-            } else if (gamepad2.dpad_left) {
-                climbingDirection = 1;  // hold position
             } else {
                 climbingDirection = 0;
             }
