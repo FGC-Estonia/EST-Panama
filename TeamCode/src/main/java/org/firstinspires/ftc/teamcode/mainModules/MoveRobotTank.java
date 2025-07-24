@@ -59,8 +59,8 @@ public class MoveRobotTank {
      // Defines the different drive speed gears.
 
     public enum DriveGear {
-        LOW(0.35, 0.7, "Low"),
-        MEDIUM(0.6, 0.8, "Medium"),
+        LOW(0.35, 0.4, "Low"),
+        MEDIUM(0.6, 0.5, "Medium"),
         HIGH(1.0, 0.9, "High");
 
         public final double maxSpeed;
@@ -133,7 +133,7 @@ public class MoveRobotTank {
         double turn;
         if (stationaryTurn) {
             // super‑snappy but still protected
-            turn = turnLimiter.calculate(rawTurnCubed);
+            turn = rawTurnCubed;
         } else {
             // gentle curvature
             turn = rawTurnCubed;
@@ -143,6 +143,9 @@ public class MoveRobotTank {
 
         drive = (rawDrive == 0) ? 0 : drive;
         turn = (rawTurn == 0) ? 0 : turn;
+
+        lastDrive = drive;
+        lastTurn = turn;
 
         telemetry.addData("raw drive", driveInput);
         telemetry.addData("deadzone drive", rawDrive);
@@ -210,7 +213,7 @@ public class MoveRobotTank {
             double rightVel = rightDrive.getVelocity();
 
             // threshold below which we consider “stopped”
-            double stopThreshold = 100.0;
+            double stopThreshold = 50.0;
 
             if (Math.abs(leftVel) > stopThreshold || Math.abs(rightVel) > stopThreshold) {
                 // compute brief brake power proportional to velocity
