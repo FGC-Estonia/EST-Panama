@@ -54,13 +54,15 @@ public class MoveRobotTank {
     private double turnSpeed = 0.9; // Dynamic, set by DriveGear
     private double lastLeftPower = 0;
     private double lastRightPower = 0;
+    private double lastDrive = 0;
+    private double lastTurn = 0;
 
 
      // Defines the different drive speed gears.
 
     public enum DriveGear {
-        LOW(0.35, 0.7, "Low"),
-        MEDIUM(0.6, 0.8, "Medium"),
+        LOW(0.35, 0.4, "Low"),
+        MEDIUM(0.6, 0.5, "Medium"),
         HIGH(1.0, 0.9, "High");
 
         public final double maxSpeed;
@@ -125,6 +127,21 @@ public class MoveRobotTank {
         double rawDrive = applyDeadzone(driveInput);
         double rawTurn  = applyDeadzone(turnInput) * turnSpeed;
 
+        // --- Counterstrife logic for drive and turn --- //
+        boolean reversingDrive = (Math.signum(rawDrive) != Math.signum(lastDrive)) && lastDrive != 0 && (Math.abs(rawDrive) > 0.05);
+        boolean reversingTurn  = (Math.signum(rawTurn)  != Math.signum(lastTurn)) && lastTurn != 0 && (Math.abs(rawTurn) > 0.05);
+
+        /*(if (reversingDrive) {
+            driverLimiter.reset(0); // Reset drive limiter for instant decel
+            rawDrive *= 1.2;
+        }
+        if (reversingTurn) {
+            turnLimiter.reset(0); // Reset turn limiter for instant spin reversal
+            rawTurn*= 1.2;
+        }*/
+
+
+
         // cubic scaling:
         double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
         boolean stationaryTurn = Math.abs(drive) < STATIONARY_TURN_THRESHOLD;
@@ -133,7 +150,7 @@ public class MoveRobotTank {
         double turn;
         if (stationaryTurn) {
             // super‑snappy but still protected
-            turn = turnLimiter.calculate(rawTurnCubed);
+            turn = rawTurnCubed;
         } else {
             // gentle curvature
             turn = rawTurnCubed;
@@ -143,6 +160,9 @@ public class MoveRobotTank {
 
         drive = (rawDrive == 0) ? 0 : drive;
         turn = (rawTurn == 0) ? 0 : turn;
+
+        lastDrive = drive;
+        lastTurn = turn;
 
         telemetry.addData("raw drive", driveInput);
         telemetry.addData("deadzone drive", rawDrive);
@@ -210,7 +230,7 @@ public class MoveRobotTank {
             double rightVel = rightDrive.getVelocity();
 
             // threshold below which we consider “stopped”
-            double stopThreshold = 100.0;
+            double stopThreshold = 50.0;
 
             if (Math.abs(leftVel) > stopThreshold || Math.abs(rightVel) > stopThreshold) {
                 // compute brief brake power proportional to velocity
