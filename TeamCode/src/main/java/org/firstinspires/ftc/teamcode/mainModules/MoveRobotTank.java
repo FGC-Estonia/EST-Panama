@@ -29,7 +29,8 @@ public class MoveRobotTank {
     // --- Drive Constants ---
     private static final double MAX_TURN_SPEED = 0.5;
     private static final double MAX_TURN_DURING_CURVE = 0.2;
-    private static final double MOTOR_DEADZONE = 0.05; // Joystick deadband
+    private static final double DRIVE_DEADZONE = 0.05; // Joystick deadband
+    private static final double TURN_DEADZONE = 0.02; // Joystick deadband
     private static final double STATIONARY_TURN_THRESHOLD = 0.05;
     private static final double CURVATURE_DRIVE_FACTOR = 0.8;
     private static final double MAX_MOTOR_VELOCITY_TPS = 1972.92;
@@ -51,7 +52,7 @@ public class MoveRobotTank {
 
     // --- Current State Variables (Dynamic) ---
     private double maxSpeed = 1.0; // Dynamic, set by DriveGear
-    private double turnSpeed = 0.9; // Dynamic, set by DriveGear
+    private double turnSpeed = 0.8; // Dynamic, set by DriveGear
     private double lastLeftPower = 0;
     private double lastRightPower = 0;
     private double lastDrive = 0;
@@ -63,7 +64,7 @@ public class MoveRobotTank {
     public enum DriveGear {
         LOW(0.35, 0.4, "Low"),
         MEDIUM(0.6, 0.5, "Medium"),
-        HIGH(1.0, 0.9, "High");
+        HIGH(1.0, 0.8, "High");
 
         public final double maxSpeed;
         public final double turnSpeed;
@@ -108,9 +109,9 @@ public class MoveRobotTank {
     }
 
     // Ignores input when the joystick moves very slightly
-    private double applyDeadzone(double input) {
-        if (Math.abs(input) < MOTOR_DEADZONE) return 0.0;
-        return Math.copySign((Math.abs(input) - MOTOR_DEADZONE) / (1.0 - MOTOR_DEADZONE), input);
+    private double applyDeadzone(double input, double deadzone) {
+        if (Math.abs(input) < deadzone) return 0.0;
+        return Math.copySign((Math.abs(input) - deadzone) / (1.0 - deadzone), input);
     }
     
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
@@ -124,8 +125,8 @@ public class MoveRobotTank {
 
 
         // before limiting:
-        double rawDrive = applyDeadzone(driveInput);
-        double rawTurn  = applyDeadzone(turnInput) * turnSpeed;
+        double rawDrive = applyDeadzone(driveInput, DRIVE_DEADZONE);
+        double rawTurn  = applyDeadzone(turnInput, TURN_DEADZONE) * turnSpeed;
 
         // --- Counterstrife logic for drive and turn --- //
         boolean reversingDrive = (Math.signum(rawDrive) != Math.signum(lastDrive)) && lastDrive != 0 && (Math.abs(rawDrive) > 0.05);
@@ -230,7 +231,7 @@ public class MoveRobotTank {
             double rightVel = rightDrive.getVelocity();
 
             // threshold below which we consider “stopped”
-            double stopThreshold = 50.0;
+            double stopThreshold = 80.0;
 
             if (Math.abs(leftVel) > stopThreshold || Math.abs(rightVel) > stopThreshold) {
                 // compute brief brake power proportional to velocity

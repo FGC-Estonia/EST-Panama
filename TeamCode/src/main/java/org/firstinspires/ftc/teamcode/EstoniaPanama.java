@@ -114,8 +114,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad2_dpad_down = new Presses();
         Presses gamepad2_left_bumper = new Presses();
 
-        Presses gamepad2_dpad_left = new Presses();
-        Presses gamepad2_dpad_right = new Presses();
 
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
