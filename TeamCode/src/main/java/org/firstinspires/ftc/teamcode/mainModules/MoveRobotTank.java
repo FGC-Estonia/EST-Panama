@@ -54,6 +54,8 @@ public class MoveRobotTank {
     private double turnSpeed = 0.9; // Dynamic, set by DriveGear
     private double lastLeftPower = 0;
     private double lastRightPower = 0;
+    private double lastDrive = 0;
+    private double lastTurn = 0;
 
 
      // Defines the different drive speed gears.
@@ -124,6 +126,21 @@ public class MoveRobotTank {
         // before limiting:
         double rawDrive = applyDeadzone(driveInput);
         double rawTurn  = applyDeadzone(turnInput) * turnSpeed;
+
+        // --- Counterstrife logic for drive and turn --- //
+        boolean reversingDrive = (Math.signum(rawDrive) != Math.signum(lastDrive)) && lastDrive != 0 && (Math.abs(rawDrive) > 0.05);
+        boolean reversingTurn  = (Math.signum(rawTurn)  != Math.signum(lastTurn)) && lastTurn != 0 && (Math.abs(rawTurn) > 0.05);
+
+        /*(if (reversingDrive) {
+            driverLimiter.reset(0); // Reset drive limiter for instant decel
+            rawDrive *= 1.2;
+        }
+        if (reversingTurn) {
+            turnLimiter.reset(0); // Reset turn limiter for instant spin reversal
+            rawTurn*= 1.2;
+        }*/
+
+
 
         // cubic scaling:
         double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
