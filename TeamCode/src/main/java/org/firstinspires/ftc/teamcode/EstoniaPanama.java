@@ -36,6 +36,7 @@ import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
 import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
+import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
 @TeleOp(name = "Main code Estonia Panama")
@@ -69,6 +70,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         PoseEstimator poseEstimator = new PoseEstimator(imuManager);
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
+        BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
 
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
@@ -106,6 +108,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad1_dpad_right = new Presses();
         Presses gamepad1_dpad_up = new Presses();
         Presses gamepad1_dpad_down = new Presses();
+
+        Presses gamepad2_dpad_left = new Presses();
+        Presses gamepad2_dpad_right = new Presses();
 
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
@@ -171,6 +176,12 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 collectingDirection = -1; // let out
             } else {
                 collectingDirection = 0;  // hold
+            }
+
+            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right)) {
+                ballPusher.pushingBalls(1);
+            } else if ((gamepad2_dpad_left.pressed(gamepad2.dpad_left))) {
+                ballPusher.pushingBalls(-1);
             }
 
             // Apply motor control
