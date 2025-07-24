@@ -106,9 +106,9 @@ public class MoveRobotTank {
     }
 
     // Ignores input when the joystick moves very slightly
-    private double applyDeadzone(double input, double deadband) {
-        if (Math.abs(input) < deadband) return 0.0;
-        return Math.copySign((Math.abs(input) - deadband) / (1.0 - deadband), input);
+    private double applyDeadzone(double input) {
+        if (Math.abs(input) < MOTOR_DEADZONE) return 0.0;
+        return Math.copySign((Math.abs(input) - MOTOR_DEADZONE) / (1.0 - MOTOR_DEADZONE), input);
     }
     
     public void drive(double currentHeading, double currentPitch, double driveInput, double turnInput,
@@ -122,8 +122,8 @@ public class MoveRobotTank {
 
 
         // before limiting:
-        double rawDrive = applyDeadzone(driveInput, MOTOR_DEADZONE);
-        double rawTurn  = applyDeadzone(turnInput, MOTOR_DEADZONE) * turnSpeed;
+        double rawDrive = applyDeadzone(driveInput);
+        double rawTurn  = applyDeadzone(turnInput) * turnSpeed;
 
         // cubic scaling:
         double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
@@ -139,7 +139,7 @@ public class MoveRobotTank {
             turn = rawTurnCubed;
         }
 
-        turn = Math.min(turn, MAX_TURN_SPEED);
+        turn = Math.copySign(Math.min(Math.abs(turn), MAX_TURN_SPEED), turn);
 
         drive = (rawDrive == 0) ? 0 : drive;
         turn = (rawTurn == 0) ? 0 : turn;
@@ -155,9 +155,9 @@ public class MoveRobotTank {
         double leftTargetPower, rightTargetPower;
 
         if (stationaryTurn) {
-            // on‑the‑spot pivot
-            leftTargetPower  = drive + turn;
-            rightTargetPower = drive - turn;
+            // on‑the‑spot pivot -- UNTESTED PARABOLE SCALING
+            leftTargetPower  = drive + turn * Math.pow(turn / MAX_TURN_SPEED, 2);
+            rightTargetPower = drive - turn * Math.pow(turn / MAX_TURN_SPEED, 2);
         } else {
             // smooth curvature drive
             // Original: turn = Math.min(MAX_TURN_DURING_CURVE, turn); // Consider removing or adjusting how this is used if it's too restrictive
