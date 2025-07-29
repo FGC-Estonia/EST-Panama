@@ -22,6 +22,7 @@ public class MoveRobot {
     private final boolean useVelocity;
 
     private final boolean protect;
+    double MAX_ANGULAR_VELOCITY_RADIANS = 1972.92;
 
     double wantedAngle = 0;
 
@@ -133,14 +134,13 @@ public class MoveRobot {
         );
         // if the power is not over 1, the code will divide by 1, which doesn't affect the end result
         double max = Math.max(maxRawPower, 1);
-        double maxAngularVelocityRadians = 1972.92;
 
         if (useVelocity) {
             // Calculate wheel speeds normalized to the wheels.
-            double leftFrontRawSpeed = (leftFrontPowerRaw / max * maxAngularVelocityRadians);
-            double leftBackRawSpeed = (leftBackPowerRaw / max * maxAngularVelocityRadians);
-            double rightFrontRawSpeed = (rightFrontPowerRaw / max * maxAngularVelocityRadians);
-            double rightBackRawSpeed = (rightBackPowerRaw / max * maxAngularVelocityRadians);
+            double leftFrontRawSpeed = (leftFrontPowerRaw / max * MAX_ANGULAR_VELOCITY_RADIANS);
+            double leftBackRawSpeed = (leftBackPowerRaw / max * MAX_ANGULAR_VELOCITY_RADIANS);
+            double rightFrontRawSpeed = (rightFrontPowerRaw / max * MAX_ANGULAR_VELOCITY_RADIANS);
+            double rightBackRawSpeed = (rightBackPowerRaw / max * MAX_ANGULAR_VELOCITY_RADIANS);
 
             leftFrontDriveEx.setVelocity(leftFrontRawSpeed * maxSpeed);
             leftBackDriveEx.setVelocity(leftBackRawSpeed * maxSpeed);
