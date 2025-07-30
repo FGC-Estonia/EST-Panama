@@ -5,38 +5,48 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.EstoniaPanama;
 
 public class BallPusher {
 
     private DcMotorEx motor = null;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
+
     public BallPusher(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         mapMotors();
     }
 
+
     private void mapMotors() {
         motor = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_EH");
 
         motor.setDirection(DcMotor.Direction.FORWARD);
 
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
 
     public void pushingBalls(int direction) {
-        double power;
 
-        if (direction == 1) {  // Climb up
-            power = 1.0;
-        } else if (direction == -1) {  // Climb down slowly
-            power = -1.0;
-        } else {
-            power = 0;
+
+        if (direction > 0) {
+            extend(-6840);
+            motor.setPower(0);
+        } else if (direction < 0) {
+            extend(-5850);
+            motor.setPower(0);
         }
 
-        motor.setPower(power);
+        motor.setPower(direction);
+        telemetry.addData("Distance", motor.getCurrentPosition());
     }
 
+    public void extend(int distance) {
+        motor.setTargetPosition(distance); //1000(height mm)/(6mm(hex shaft diameter)*3,14)*28(ticks per rotation)
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //runs to position
+
+    }
 }

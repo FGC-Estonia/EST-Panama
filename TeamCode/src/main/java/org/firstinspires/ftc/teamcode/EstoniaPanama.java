@@ -93,6 +93,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
         //for rope climbing
         Presses gamepad2_cross = new Presses();
+        Presses gamepad2_triangle = new Presses();
+
 
         Presses gamepad1_right_bumper = new Presses();
         Presses gamepad1_left_bumper = new Presses();
@@ -114,7 +116,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad2_dpad_down = new Presses();
         Presses gamepad2_left_bumper = new Presses();
 
-
+        // For FieldCentric toggle and GyroReset
+        Presses gamepad1_share = new Presses();
+        Presses gamepad1_options = new Presses();
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
         Presses gamepad1_square = new Presses(speedSelectToggle);
@@ -131,7 +135,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         while (opModeIsActive()) { // main loop
 
             //gyro reset
-            if (gamepad1.right_bumper) {
+            if (gamepad1.options) {
                 imuManager.resetImu();
             }
 
@@ -140,21 +144,21 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             double imuAngle = imuManager.getYawRadians();
             double imuPitch = imuManager.getPitchRadians();
-            //double leftRight = gamepad1.right_stick_x;  //used for tank drive
-            double leftRight = gamepad1.left_stick_x;
+            double leftRight = gamepad1.right_stick_x;  //used for tank drive
+            //double leftRight = gamepad1.left_stick_x;
             double frontBack = -gamepad1.left_stick_y;
             double turn = gamepad1.right_stick_x;
-            boolean fieldCentric = gamepad1_left_trigger.toggle(gamepad1.left_trigger > 0.5);
-            boolean holdingOnRope = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
+            boolean fieldCentric = gamepad1_share.toggle(gamepad1.share);
+            boolean holdingOnRope = gamepad2_triangle.toggle(gamepad2.triangle);
             int climbingDirection = 0;
+
 
             // Climbing logic with dpad
             if (holdingOnRope) {
                 climbingDirection = 1;  // hold position
-            }
-            else if (gamepad2.dpad_up) {
+            } else if (gamepad2.left_bumper) {
                 climbingDirection = 2;  // climb up
-            } else if (gamepad2.dpad_down) {
+            } else if (gamepad2.right_bumper) {
                 climbingDirection = -1; // climb down
             } else {
                 climbingDirection = 0;
@@ -166,7 +170,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 climbRope.ropeClimbing(climbingDirection);
             }
             if (gamepad2_left_bumper.pressed(gamepad2.left_bumper)) {
-                gamepad2.rumble(1, 1, 1000);
                 climbRope.rememberHomePosition();
             }
 
@@ -183,11 +186,12 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 collectingDirection = 0;  // hold
             }
 
-            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right)) {
+            if (gamepad2_triangle.toggle((gamepad2.triangle))) {
                 ballPusher.pushingBalls(1);
-            } else if ((gamepad2_dpad_left.pressed(gamepad2.dpad_left))) {
+            } else if (!gamepad2_triangle.toggle((gamepad2.triangle))){
                 ballPusher.pushingBalls(-1);
             }
+
 
             // Apply motor control
             if (collectBallsAttached) {
@@ -212,7 +216,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
 
 
-            if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
+            if (gamepad1_options.pressed(gamepad1.options)) {
                 gamepad1.rumble(1, 1, 1000);
             }
 
@@ -221,13 +225,19 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
 
             DriveGear currentDriveGear = DriveGear.LOW;
-            if (gamepad1_cross.returnToggleState()) {
-                currentDriveGear = DriveGear.LOW;
-            } else if (gamepad1_square.returnToggleState()) {
-                currentDriveGear = DriveGear.MEDIUM;
-            } else if (gamepad1_triangle.returnToggleState()) {
-                currentDriveGear = DriveGear.HIGH;
+            int gear = 1;
+            if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
+                gear = Math.max(1, gear - 1);
+            } else if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
+                gear = Math.min(3, gear + 1);
+            }
 
+            if (gear == 1) {
+                currentDriveGear = DriveGear.LOW;
+            } else if (gear == 2) {
+                currentDriveGear = DriveGear.MEDIUM;
+            } else {
+                currentDriveGear = DriveGear.HIGH;
 
                 if (!xDrive) {
                     moveRobotTank.drive(
@@ -244,8 +254,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                     );
                 }
                 telemetry.update();
-            } // This brace correctly closes the `while (opModeIsActive())` loop.
+                } // This brace correctly closes the `while (opModeIsActive())` loop.
 
-        }
-    } // This brace correctly closes the `runOpMode()` method.
-}// This brace correctly closes the `EstoniaPanama` class.
+            }
+        } // This brace correctly closes the `runOpMode()` method.
+    }// This brace correctly closes the `EstoniaPanama` class.
