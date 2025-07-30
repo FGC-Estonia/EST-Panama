@@ -49,7 +49,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
-        boolean xDrive = false; // can toggle between xDrive and Tank drive
+        boolean xDrive = true; // can toggle between xDrive and Tank drive
         int storedHomePositionTicks = 0;
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
@@ -127,6 +127,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         Presses gamepad1_cross = new Presses(speedSelectToggle);
         gamepad1_triangle.setToggleTrue();//set default value
 
+        int gear = 1;
 
         // double maxRaisedVelocity; // This variable is declared but unused, and causes a warning. Removed for cleaner code unless it has a future use.
 
@@ -144,8 +145,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             double imuAngle = imuManager.getYawRadians();
             double imuPitch = imuManager.getPitchRadians();
-            double leftRight = gamepad1.right_stick_x;  //used for tank drive
-            //double leftRight = gamepad1.left_stick_x;
+            //double leftRight = gamepad1.right_stick_x;  //used for tank drive
+            double leftRight = gamepad1.left_stick_x;
             double frontBack = -gamepad1.left_stick_y;
             double turn = gamepad1.right_stick_x;
             boolean fieldCentric = gamepad1_share.toggle(gamepad1.share);
@@ -188,7 +189,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             if (gamepad2_triangle.toggle((gamepad2.triangle))) {
                 ballPusher.pushingBalls(1);
-            } else if (!gamepad2_triangle.toggle((gamepad2.triangle))){
+            } else if (!gamepad2_triangle.toggle((gamepad2.triangle))) {
                 ballPusher.pushingBalls(-1);
             }
 
@@ -225,37 +226,37 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
 
             DriveGear currentDriveGear = DriveGear.LOW;
-            int gear = 1;
-            if (gamepad1_left_bumper.pressed(gamepad1.left_bumper)) {
-                gear = Math.max(1, gear - 1);
-            } else if (gamepad1_right_bumper.pressed(gamepad1.right_bumper)) {
-                gear = Math.min(3, gear + 1);
+
+            if (gamepad1_left_bumper.released(gamepad1.left_bumper) && gear >= 2) {
+                gear -= 1;
+            } else if (gamepad1_right_bumper.released(gamepad1.right_bumper) && gear <= 2) {
+                gear += 1;
             }
+            telemetry.addData("Gear", gear);
 
             if (gear == 1) {
                 currentDriveGear = DriveGear.LOW;
             } else if (gear == 2) {
                 currentDriveGear = DriveGear.MEDIUM;
-            } else {
+            } else if (gear == 3) {
                 currentDriveGear = DriveGear.HIGH;
-
-                if (!xDrive) {
-                    moveRobotTank.drive(
-                            imuAngle, imuPitch,
-                            frontBack, turn,
-                            currentDriveGear
-                    );
-                } else {
-                    moveRobot.move(
-                            imuAngle,
-                            frontBack, leftRight, turn,
-                            fieldCentric,
-                            currentDriveGear
-                    );
-                }
-                telemetry.update();
-                } // This brace correctly closes the `while (opModeIsActive())` loop.
-
             }
+
+            if (!xDrive) {
+                moveRobotTank.drive(
+                        imuAngle, imuPitch,
+                        frontBack, turn,
+                        currentDriveGear
+                );
+            } else {
+                moveRobot.move(
+                        imuAngle,
+                        frontBack, leftRight, turn,
+                        fieldCentric,
+                        currentDriveGear
+                );
+            }
+            telemetry.update();
+            } // This brace correctly closes the `while (opModeIsActive())` loop.
         } // This brace correctly closes the `runOpMode()` method.
     }// This brace correctly closes the `EstoniaPanama` class.
