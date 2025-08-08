@@ -170,7 +170,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection);
             }
-            if (gamepad2_left_bumper.pressed(gamepad2.left_bumper)) {
+            if (gamepad1_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
             }
 
@@ -187,9 +187,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 collectingDirection = 0;  // hold
             }
 
-            if (gamepad2_triangle.toggle((gamepad2.triangle))) {
+            if (gamepad2_cross.toggle((gamepad2.cross))) {
                 ballPusher.pushingBalls(1);
-            } else if (!gamepad2_triangle.toggle((gamepad2.triangle))) {
+            } else if (!gamepad2_cross.toggle((gamepad2.cross))) {
                 ballPusher.pushingBalls(-1);
             }
 
