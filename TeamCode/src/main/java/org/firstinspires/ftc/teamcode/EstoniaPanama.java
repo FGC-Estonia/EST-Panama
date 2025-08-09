@@ -170,11 +170,11 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection);
             }
-            if (gamepad1_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
+            if (gamepad2_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
             }
 
-            if (gamepad1_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
+            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
                 climbRope.rotateToHome();
             }
 
