@@ -159,4 +159,13 @@ public class MoveRobot {
         telemetry.addData("left back", leftBackDriveEx.getVelocity());
         telemetry.addData("right back", rightBackDriveEx.getVelocity());
     } // Correct closing brace for the `move` method.
+    public int[] getEncoderPositions() {
+        return new int[]{
+                rightFrontDriveEx.getCurrentPosition(),
+                leftFrontDriveEx.getCurrentPosition(),
+                leftBackDriveEx.getCurrentPosition(),
+                rightBackDriveEx.getCurrentPosition()
+        };
+    }
+
 } // Correct closing brace for the `MoveRobot` class.

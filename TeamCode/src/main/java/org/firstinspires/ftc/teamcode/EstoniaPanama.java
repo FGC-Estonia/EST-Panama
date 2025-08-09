@@ -30,6 +30,7 @@ d!   'W M@@@A  ][  M@@@A W`   !b
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
@@ -47,11 +48,23 @@ import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
     int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down
     int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
-    int[] lastDriveMotorPositions = {0, 0};
+
+    // ---- CHANGED: lastDriveMotorPositions length 4 for BL,BR,FR,FL ----
+    int[] lastDriveMotorPositions = {0, 0, 0, 0};
+
     boolean openedBallPusher = false;
     boolean isSpinningWheel = false;
     ElapsedTime runtime = new ElapsedTime();
     float spinWheelStartTime = (float) runtime.seconds();
+
+    // ---- CHANGED: encoder & geometry placeholders (REPLACE with your values) ----
+    // TICKS_PER_REV: encoder ticks per motor revolution
+    private static final double TICKS_PER_REV = 560.0;      // <-- replace with your encoder
+    private static final double WHEEL_DIAMETER = 0.09;;    // meters, replace with your wheel diameter
+    private static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
+    // robot geometry for kinematics: half distances (meters) - replace with your robot measurements
+    private static final double HALF_WHEELBASE = 0.155;     // half distance front-back (m) - replace
+    private static final double HALF_TRACK = 0.2;         // half distance left-right (m) - replace
 
     @Override
     public void runOpMode() {
@@ -74,7 +87,11 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
          */
 
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry, xDrive);
-        PoseEstimator poseEstimator = new PoseEstimator(imuManager);
+
+        // ---- CHANGED: Construct PoseEstimator with geometry ----
+        PoseEstimator poseEstimator = new PoseEstimator(imuManager, HALF_WHEELBASE, HALF_TRACK);
+
+        // ---- NOTE: moveRobot is created here and we'll use its getEncoderPos() below ----
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
@@ -241,14 +258,27 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 poseEstimator.resetPoseEstimate();
             }
 
-            int[] curDriveMotorPositions = moveRobotTank.getEncoderPositions();
+            // ---- CHANGED: read 4 encoder positions via moveRobot.getEncoderPos() ----
+            // Expecting order: {back-left, back-right, front-right, front-left}
+            int[] curDriveMotorPositions = moveRobot.getEncoderPositions();
 
-            int deltaLeft = curDriveMotorPositions[0] - lastDriveMotorPositions[0];
-            int deltaRight = curDriveMotorPositions[1] - lastDriveMotorPositions[1];
+            // ---- CHANGED: compute tick deltas per wheel ----
+            int deltaBL_ticks = curDriveMotorPositions[0] - lastDriveMotorPositions[0];
+            int deltaBR_ticks = curDriveMotorPositions[1] - lastDriveMotorPositions[1];
+            int deltaFR_ticks = curDriveMotorPositions[2] - lastDriveMotorPositions[2];
+            int deltaFL_ticks = curDriveMotorPositions[3] - lastDriveMotorPositions[3];
 
+            // save current positions for next loop
             lastDriveMotorPositions = curDriveMotorPositions.clone();
 
-            poseEstimator.update(deltaLeft, deltaRight);
+            // ---- CHANGED: convert tick deltas -> linear displacements and call PoseEstimator.update ----
+            double dBL = ticksToDistance(deltaBL_ticks);
+            double dBR = ticksToDistance(deltaBR_ticks);
+            double dFR = ticksToDistance(deltaFR_ticks);
+            double dFL = ticksToDistance(deltaFL_ticks);
+
+            // order: back-left, back-right, front-right, front-left as you requested
+            poseEstimator.update(dBL, dBR, dFR, dFL);
 
 
             telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
@@ -294,6 +324,12 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 );
             }
             telemetry.update();
-            } // This brace correctly closes the `while (opModeIsActive())` loop.
-        } // This brace correctly closes the `runOpMode()` method.
-    }// This brace correctly closes the `EstoniaPanama` class.
+        } // This brace correctly closes the `while (opModeIsActive())` loop.
+    } // This brace correctly closes the `runOpMode()` method.
+
+    // ---- CHANGED: helper to convert encoder ticks -> linear distance (meters) ----
+    private double ticksToDistance(int ticks) {
+        return ticks * (WHEEL_CIRCUMFERENCE / TICKS_PER_REV);
+    }
+
+} // This brace correctly closes the `EstoniaPanama` class.
