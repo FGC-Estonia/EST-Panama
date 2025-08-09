@@ -45,6 +45,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down
     int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
     int[] lastDriveMotorPositions = {0, 0};
+    boolean openedBallPusher = false;
 
     @Override
     public void runOpMode() {
@@ -189,7 +190,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             if (gamepad2_cross.toggle((gamepad2.cross))) {
                 ballPusher.pushingBalls(1);
-            } else if (!gamepad2_cross.toggle((gamepad2.cross))) {
+                openedBallPusher = true;
+            } else if (!gamepad2_cross.toggle((gamepad2.cross)) && openedBallPusher) {
                 ballPusher.pushingBalls(-1);
             }
 

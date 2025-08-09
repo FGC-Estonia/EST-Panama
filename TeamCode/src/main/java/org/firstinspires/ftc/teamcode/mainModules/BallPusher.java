@@ -25,7 +25,9 @@ public class BallPusher {
 
         motor.setDirection(DcMotor.Direction.FORWARD);
 
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // Reset encoder here
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
     }
 
@@ -33,10 +35,10 @@ public class BallPusher {
 
 
         if (direction > 0) {
-            extend(-6840);
+            extend(-650);
             motor.setPower(0);
         } else if (direction < 0) {
-            extend(-5850);
+            extend(0);
             motor.setPower(0);
         }
 
