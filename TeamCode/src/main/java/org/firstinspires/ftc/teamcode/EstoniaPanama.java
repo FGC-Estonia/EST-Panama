@@ -29,6 +29,7 @@ d!   'W M@@@A  ][  M@@@A W`   !b
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
@@ -37,6 +38,8 @@ import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
 import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
 import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
+import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
+
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
 @TeleOp(name = "Main code Estonia Panama")
@@ -46,6 +49,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
     int[] lastDriveMotorPositions = {0, 0};
     boolean openedBallPusher = false;
+    boolean isSpinningWheel = false;
+    ElapsedTime runtime = new ElapsedTime();
+    float spinWheelStartTime = (float) runtime.seconds();
 
     @Override
     public void runOpMode() {
@@ -72,6 +78,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
+        SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
 
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
@@ -95,6 +102,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         //for rope climbing
         Presses gamepad2_cross = new Presses();
         Presses gamepad2_triangle = new Presses();
+
+        //for spinning wheel
+        Presses gamepad2_square = new Presses();
 
 
         Presses gamepad1_right_bumper = new Presses();
@@ -177,6 +187,31 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
                 climbRope.rotateToHome();
+            }
+
+            //Spinning wheel
+
+            if (gamepad2_square.toggle((gamepad2.square))) {
+                if (isSpinningWheel) {
+                    float curTime = (float) runtime.seconds();
+                    float elapsedTime = curTime - spinWheelStartTime;
+
+                    telemetry.addData("time spinning wheel: ", elapsedTime);
+                    telemetry.addData("over 15 seconds: ", (elapsedTime > 15));
+
+                    if (elapsedTime > 15) {
+                        gamepad2.rumble(1, 1, 200);
+                    }
+
+                    continue;
+                }
+
+                spinWheel.spin(true);
+                isSpinningWheel = true;
+                spinWheelStartTime = (float) runtime.seconds();
+            } else {
+                isSpinningWheel = false;
+                spinWheel.stop();
             }
 
             //Collecting balls
