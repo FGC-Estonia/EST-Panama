@@ -24,18 +24,18 @@ public class MoveRobot {
     private final boolean protect;
     double MAX_ANGULAR_VELOCITY_RADIANS = 1972.92;
 
-    double wantedAngle = 0;
+        double wantedAngle = 0;
 
-    double maxSpeed=1;
+        double maxSpeed=1;
 
-    public MoveRobot(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity){
+        public MoveRobot(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity){
 
-        //Pass required objects and a setting to the class
-        this.protect = protect;
-        this.telemetry = telemetry;
-        this.hardwareMap = hardwareMap;
-        this.useVelocity = useVelocity;
-        mapMotors();
+            //Pass required objects and a setting to the class
+            this.protect = protect;
+            this.telemetry = telemetry;
+            this.hardwareMap = hardwareMap;
+            this.useVelocity = useVelocity;
+            mapMotors();
     }
 
     private void mapMotors() {

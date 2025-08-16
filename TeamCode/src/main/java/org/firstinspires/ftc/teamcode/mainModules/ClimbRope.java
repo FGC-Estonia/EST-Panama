@@ -35,8 +35,8 @@ public class ClimbRope {
     }
 
     private void mapMotors() {
-        leftMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_EH");
-        rightMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_1_CH");
+        leftMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_1_CH");
+        rightMotor = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_EH");
 
         leftMotor.setDirection(DcMotor.Direction.FORWARD);
         rightMotor.setDirection(DcMotor.Direction.REVERSE);

@@ -35,7 +35,7 @@ public class BallPusher {
 
 
         if (direction > 0) {
-            extend(-650);
+            extend(650);
             motor.setPower(0);
         } else if (direction < 0) {
             extend(0);
