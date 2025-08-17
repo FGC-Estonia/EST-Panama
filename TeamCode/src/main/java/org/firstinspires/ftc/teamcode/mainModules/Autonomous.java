@@ -1,31 +1,31 @@
 package org.firstinspires.ftc.teamcode.mainModules;
 
 import com.acmerobotics.roadrunner.Pose2d;
-//import com.acmerobotics.roadrunner.trajectory.TrajectorySequence;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Autonomous {
     private final MoveRobot drive;
-    //private final PoseEstimator poseEstimator;
     private final Telemetry telemetry;
+    private final AprilTagManager aprilTagManager;   // declare only
 
-    public Autonomous(MoveRobot moveRobot /*, PoseEstimator poseEstimator */, Telemetry telemetry) {
+    // Accept HardwareMap here so we can create the AprilTag helper
+    public Autonomous(MoveRobot moveRobot, HardwareMap hardwareMap, Telemetry telemetry) {
         this.drive = moveRobot;
-       // this.poseEstimator = poseEstimator;
         this.telemetry = telemetry;
+
+        // create & init april after telemetry/hardwareMap exist
+        aprilTagManager = new AprilTagManager(hardwareMap, telemetry);
+        aprilTagManager.init(true, "Webcam 1");
     }
 
-    public void goToRope(ClimbRope.RopeID ropeID) {
-//        Pose2d targetPose = ClimbRope.getRopePose(ropeID);
-        // TODO: Build trajectory using RoadRunner builder
-        // Example:
-        // TrajectorySequence traj = drive.trajectorySequenceBuilder(poseEstimator.getPoseEstimate())
-        //         .lineTo(targetPose.vec())
-        //         .build();
-        // drive.followTrajectorySequence(traj);
+    public void showAprilTagData() {
+        // example: helper posts telemetry like the sample
+        aprilTagManager.sendTelemetry();
+        telemetry.addData("showingdata ", "t");
+    }
 
-        telemetry.addData("Going to rope:", ropeID);
-        telemetry.update();
+    public void stopApril() {
+        aprilTagManager.close();
     }
 }

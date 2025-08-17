@@ -31,6 +31,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.mainModules.Autonomous;
+
 import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.Presses;
@@ -96,6 +98,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
+        Autonomous autonomous = new Autonomous(moveRobot, hardwareMap,telemetry);
 
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
@@ -283,6 +286,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
 
+
+            //autonomous
+            autonomous.showAprilTagData();
 
             if (gamepad1_options.pressed(gamepad1.options)) {
                 gamepad1.rumble(1, 1, 1000);
