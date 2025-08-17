@@ -70,6 +70,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     private static final double HALF_WHEELBASE = 0.155;     // half distance front-back (m) - replace
     private static final double HALF_TRACK = 0.2;         // half distance left-right (m) - replace
 
+    boolean fieldCentric = false;
     DriveBaseController driveBase;
 
     @Override
@@ -107,7 +108,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         //MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
-        Autonomous autonomous = new Autonomous(moveRobot, hardwareMap,telemetry);
+        //Autonomous autonomous = new Autonomous(moveRobot, hardwareMap,telemetry);
 
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
@@ -189,9 +190,23 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             double drive = -gamepad1.left_stick_x;
             double strafe = gamepad1.left_stick_y;
             double turn = -gamepad1.right_stick_x;
-            boolean fieldCentric = gamepad1_share.toggle(gamepad1.share);
+
             boolean holdingOnRope = gamepad2_triangle.toggle(gamepad2.triangle);
             int climbingDirection = 0;
+
+            // FieldCentric rumble
+            if (gamepad1_share.change(gamepad1.share)) {
+
+                //telemetry.addData("pressed share", "");
+                if (!fieldCentric) {
+                    // One long 500 ms rumble when turning ON
+                    gamepad1.rumble(1.0, 1.0, 500);
+                } else {
+                    // Two short 100 ms rumbles when turning OFF
+                    gamepad1.rumble(0.6, 0.6, 100);
+                }
+                fieldCentric = gamepad1_share.toggle(gamepad1.share);
+            }
 
 
             // Climbing logic with dpad
@@ -232,7 +247,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                         gamepad2.rumble(1, 1, 200);
                     }
 
-                    continue;
                 }
 
                 spinWheel.spin(true);
@@ -297,7 +311,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
 
             //autonomous
-            autonomous.showAprilTagData();
+            //autonomous.showAprilTagData();
 
             if (gamepad1_options.pressed(gamepad1.options)) {
                 gamepad1.rumble(1, 1, 1000);
