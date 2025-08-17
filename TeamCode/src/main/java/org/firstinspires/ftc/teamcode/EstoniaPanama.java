@@ -41,6 +41,8 @@ import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
 import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
 import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
 
+import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
+
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
 @TeleOp(name = "Main code Estonia Panama")
@@ -66,10 +68,17 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     private static final double HALF_WHEELBASE = 0.155;     // half distance front-back (m) - replace
     private static final double HALF_TRACK = 0.2;         // half distance left-right (m) - replace
 
+    DriveBaseController driveBase;
+
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
         boolean xDrive = true; // can toggle between xDrive and Tank drive
+        if (xDrive) {
+            driveBase = new MoveRobot(protect, hardwareMap, telemetry, true);
+        } else {
+            driveBase = new MoveRobotTank(protect, hardwareMap, telemetry, true);
+        }
         int storedHomePositionTicks = 0;
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
@@ -92,8 +101,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         PoseEstimator poseEstimator = new PoseEstimator(imuManager, HALF_WHEELBASE, HALF_TRACK);
 
         // ---- NOTE: moveRobot is created here and we'll use its getEncoderPos() below ----
-        MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
-        MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
+       // MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
+        //MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
 
@@ -173,10 +182,10 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             double imuAngle = imuManager.getYawRadians();
             double imuPitch = imuManager.getPitchRadians();
-            //double leftRight = gamepad1.right_stick_x;  //used for tank drive
-            double leftRight = gamepad1.left_stick_x;
-            double frontBack = -gamepad1.left_stick_y;
-            double turn = gamepad1.right_stick_x;
+            //double drive = gamepad1.right_stick_x;  //used for tank drive
+            double drive = -gamepad1.left_stick_x;
+            double strafe = gamepad1.left_stick_y;
+            double turn = -gamepad1.right_stick_x;
             boolean fieldCentric = gamepad1_share.toggle(gamepad1.share);
             boolean holdingOnRope = gamepad2_triangle.toggle(gamepad2.triangle);
             int climbingDirection = 0;
@@ -258,11 +267,11 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 poseEstimator.resetPoseEstimate();
             }
 
-            // ---- CHANGED: read 4 encoder positions via moveRobot.getEncoderPos() ----
-            // Expecting order: {back-left, back-right, front-right, front-left}
-            int[] curDriveMotorPositions = moveRobot.getEncoderPositions();
+            // ---- CHANGED: read 4 encoder positions via driveBase ----
+// Expecting order: {back-left, back-right, front-right, front-left}
+            int[] curDriveMotorPositions = driveBase.getEncoderPositions();
 
-            // ---- CHANGED: compute tick deltas per wheel ----
+// ---- CHANGED: compute tick deltas per wheel ----
             int deltaBL_ticks = curDriveMotorPositions[0] - lastDriveMotorPositions[0];
             int deltaBR_ticks = curDriveMotorPositions[1] - lastDriveMotorPositions[1];
             int deltaFR_ticks = curDriveMotorPositions[2] - lastDriveMotorPositions[2];
@@ -309,20 +318,15 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 currentDriveGear = DriveGear.HIGH;
             }
 
-            if (!xDrive) {
-                moveRobotTank.drive(
-                        imuAngle, imuPitch,
-                        frontBack, turn,
-                        currentDriveGear
-                );
-            } else {
-                moveRobot.move(
-                        imuAngle,
-                        frontBack, leftRight, turn,
-                        fieldCentric,
-                        currentDriveGear
-                );
-            }
+            telemetry.addData("drive",drive);
+            telemetry.addData("strafe", strafe);
+            telemetry.addData("turn", turn);
+            driveBase.drive(
+                    imuAngle, imuPitch,
+                    strafe, drive, turn,
+                    fieldCentric, currentDriveGear
+            );
+
             telemetry.update();
         } // This brace correctly closes the `while (opModeIsActive())` loop.
     } // This brace correctly closes the `runOpMode()` method.

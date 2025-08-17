@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode.mainModules;  //place where the code is l
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
-public class MoveRobot {
+public class MoveRobot implements DriveBaseController {
 
 
     //these need to be defined here because they are used in multiple methods
@@ -41,16 +43,16 @@ public class MoveRobot {
     private void mapMotors() {
 
         // Mapping motors
-        rightFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH");
-        leftFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_EH");
-        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_EH");
-        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_CH");
+        rightFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_EH");
+        leftFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_CH");
+        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH"); // buggy rn
+        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_EH");
 
         //set the correct directions for the motors
-        leftFrontDriveEx.setDirection(DcMotorEx.Direction.FORWARD);
-        leftBackDriveEx.setDirection(DcMotorEx.Direction.FORWARD);
-        rightFrontDriveEx.setDirection(DcMotorEx.Direction.REVERSE);
-        rightBackDriveEx.setDirection(DcMotorEx.Direction.REVERSE);
+        leftFrontDriveEx.setDirection(DcMotorEx.Direction.REVERSE);
+        leftBackDriveEx.setDirection(DcMotorEx.Direction.REVERSE);
+        rightFrontDriveEx.setDirection(DcMotorEx.Direction.FORWARD);
+        rightBackDriveEx.setDirection(DcMotorEx.Direction.FORWARD);
 
 
         // Depending on settings, the robot will run using velocity or power
@@ -154,11 +156,29 @@ public class MoveRobot {
             rightFrontDriveEx.setPower(rightFrontPowerRaw / max * maxSpeed);
             rightBackDriveEx.setPower(rightBackPowerRaw / max * maxSpeed);
         }
+        /*
         telemetry.addData("left front", leftFrontDriveEx.getVelocity());
         telemetry.addData("right front", rightFrontDriveEx.getVelocity());
         telemetry.addData("left back", leftBackDriveEx.getVelocity());
         telemetry.addData("right back", rightBackDriveEx.getVelocity());
+        */
+        telemetry.addData("LeftFrontDirection: ", leftFrontDriveEx.getDirection());
+        telemetry.addData("LeftBackDirection: ", leftBackDriveEx.getDirection());
+        telemetry.addData("RightFrontDirection: ", rightFrontDriveEx.getDirection());
+        telemetry.addData("RightBackDirection: ", rightBackDriveEx.getDirection());
     } // Correct closing brace for the `move` method.
+
+    @Override
+    public void drive(double imuAngle,
+                      double imuPitch,
+                      double drive,
+                      double strafe,
+                      double turn,
+                      boolean fieldCentric,
+                      DriveGear driveGear) {
+        move(imuAngle, drive, strafe, turn, fieldCentric, driveGear);
+    }
+
     public int[] getEncoderPositions() {
         return new int[]{
                 rightFrontDriveEx.getCurrentPosition(),
