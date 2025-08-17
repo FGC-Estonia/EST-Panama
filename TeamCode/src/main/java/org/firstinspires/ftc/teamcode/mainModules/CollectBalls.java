@@ -21,7 +21,7 @@ public class CollectBalls {
     }
 
     private void mapMotors() {
-        motor = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_CH");
+        motor = hardwareMap.get(DcMotorEx.class, "Motor_Port_2_EH");
 
         motor.setDirection(DcMotor.Direction.FORWARD);
 
