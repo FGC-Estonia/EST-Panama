@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.mainModules;
-
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+package org.firstinspires.ftc.teamcode.common.util;
 
 public class HardwareConstants {
     // Movement motors

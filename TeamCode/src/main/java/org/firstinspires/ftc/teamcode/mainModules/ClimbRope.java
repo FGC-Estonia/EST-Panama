@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
 
 public class ClimbRope {
     private DcMotorEx leftMotor = null;
@@ -143,7 +144,8 @@ public class ClimbRope {
     return storedHomePositionTicks;
     }
 
-    public void ropeClimbing(int direction) {
+    public void ropeClimbing(int direction, float stick) {
+        double thingy = 0.6;
         if (resettingPosition) {return;}
 
         double leftPower, rightPower;
@@ -157,6 +159,9 @@ public class ClimbRope {
         } else if (direction == 1) {
             leftPower = STAY_ON_RATE;
             rightPower = STAY_ON_RATE;
+        } else if (direction == 3) {
+            leftPower = (stick + 1) * 0.6 - 0.2;
+            rightPower = (stick + 1) * 0.6 - 0.2;
         } else {
             leftPower = 0;
             rightPower = 0;

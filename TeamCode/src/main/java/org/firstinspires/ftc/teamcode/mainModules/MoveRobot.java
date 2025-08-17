@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
+
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
 public class MoveRobot implements DriveBaseController {

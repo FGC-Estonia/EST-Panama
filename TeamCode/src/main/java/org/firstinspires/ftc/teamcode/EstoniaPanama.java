@@ -48,7 +48,7 @@ import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear
 @TeleOp(name = "Main code Estonia Panama")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
-    int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down
+    int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down, 3 - joystick
     int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
 
     // ---- CHANGED: lastDriveMotorPositions length 4 for BL,BR,FR,FL ----
@@ -212,6 +212,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 climbingDirection = 2;  // climb up
             } else if (gamepad2.right_bumper) {
                 climbingDirection = -1; // climb down
+            } else if (Math.abs(gamepad2.left_stick_y) > 0.05) {
+                climbingDirection = 3;
             } else {
                 climbingDirection = 0;
             }
@@ -219,7 +221,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             // Apply motor control
             if (ropeClimbingAttached) {
-                climbRope.ropeClimbing(climbingDirection);
+                climbRope.ropeClimbing(climbingDirection, gamepad2.left_stick_y);
             }
             if (gamepad2_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
