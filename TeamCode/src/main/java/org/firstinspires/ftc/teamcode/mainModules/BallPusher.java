@@ -21,7 +21,7 @@ public class BallPusher {
 
 
     private void mapMotors() {
-        motor = hardwareMap.get(DcMotorEx.class, "Motor_Port_1_CH");
+        motor = hardwareMap.get(DcMotorEx.class, HardwareConstants.BALL_PUSHER_MOTOR);
 
         motor.setDirection(DcMotor.Direction.FORWARD);
 
@@ -47,7 +47,7 @@ public class BallPusher {
     }
 
     public void extend(int distance) {
-        motor.setTargetPosition(distance); //1000(height mm)/(6mm(hex shaft diameter)*3,14)*28(ticks per rotation)
+        motor.setTargetPosition(distance); //1000(height mm)/(6mm(hex shaft diameter)*3 ,14)*28(ticks per rotation)
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //runs to position
 
     }

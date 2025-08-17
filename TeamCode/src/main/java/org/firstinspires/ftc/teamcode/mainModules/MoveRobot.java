@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.mainModules;  //place where the code is l
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 
@@ -43,10 +42,10 @@ public class MoveRobot implements DriveBaseController {
     private void mapMotors() {
 
         // Mapping motors
-        rightFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_EH");
-        leftFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_CH");
-        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH"); // buggy rn
-        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_EH");
+        rightFrontDriveEx = hardwareMap.get(DcMotorEx.class, HardwareConstants.RIGHT_FRONT_MOTOR);
+        leftFrontDriveEx = hardwareMap.get(DcMotorEx.class, HardwareConstants.LEFT_FRONT_MOTOR);
+        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, HardwareConstants.LEFT_BACK_MOTOR);
+        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, HardwareConstants.RIGHT_BACK_MOTOR);
 
         //set the correct directions for the motors
         leftFrontDriveEx.setDirection(DcMotorEx.Direction.REVERSE);

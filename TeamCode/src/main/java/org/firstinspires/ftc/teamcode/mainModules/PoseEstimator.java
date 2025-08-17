@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.mainModules;
 
 import com.acmerobotics.roadrunner.Pose2d;
 
+import org.firstinspires.ftc.teamcode.common.util.ImuManager;
+
 /**
  * Pose estimator for a 4-corner omni/mecanum robot using a simple 3-state Kalman filter.
  * State: [x, y, heading]

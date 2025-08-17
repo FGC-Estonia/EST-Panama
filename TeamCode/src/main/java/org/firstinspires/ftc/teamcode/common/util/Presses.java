@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.mainModules; //place where the code is located
+package org.firstinspires.ftc.teamcode.common.util; //place where the code is located
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.mainModules;
+package org.firstinspires.ftc.teamcode.common.util;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;

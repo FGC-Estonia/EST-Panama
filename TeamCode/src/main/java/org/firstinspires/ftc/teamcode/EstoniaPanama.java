@@ -31,11 +31,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.mainModules.Autonomous;
-
-import org.firstinspires.ftc.teamcode.mainModules.ImuManager;
+import org.firstinspires.ftc.teamcode.common.util.ImuManager;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
-import org.firstinspires.ftc.teamcode.mainModules.Presses;
+import org.firstinspires.ftc.teamcode.common.util.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
@@ -190,22 +188,20 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             double drive = -gamepad1.left_stick_x;
             double strafe = gamepad1.left_stick_y;
             double turn = -gamepad1.right_stick_x;
-
             boolean holdingOnRope = gamepad2_triangle.toggle(gamepad2.triangle);
             int climbingDirection = 0;
 
             // FieldCentric rumble
-            if (gamepad1_share.change(gamepad1.share)) {
-
+            if (gamepad1_share.pressed(gamepad1.share)) {
+                fieldCentric = !fieldCentric;
                 //telemetry.addData("pressed share", "");
-                if (!fieldCentric) {
+                if (fieldCentric) {
                     // One long 500 ms rumble when turning ON
                     gamepad1.rumble(1.0, 1.0, 500);
                 } else {
                     // Two short 100 ms rumbles when turning OFF
                     gamepad1.rumble(0.6, 0.6, 100);
                 }
-                fieldCentric = gamepad1_share.toggle(gamepad1.share);
             }
 
 
