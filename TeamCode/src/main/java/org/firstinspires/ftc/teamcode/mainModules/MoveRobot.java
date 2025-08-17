@@ -41,10 +41,10 @@ public class MoveRobot {
     private void mapMotors() {
 
         // Mapping motors
-        rightFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_EH");
-        leftFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_CH");
-        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH");
-        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_EH");
+        rightFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_CH");
+        leftFrontDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_EH");
+        leftBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_3_EH");
+        rightBackDriveEx = hardwareMap.get(DcMotorEx.class, "Motor_Port_0_CH");
 
         //set the correct directions for the motors
         leftFrontDriveEx.setDirection(DcMotorEx.Direction.FORWARD);

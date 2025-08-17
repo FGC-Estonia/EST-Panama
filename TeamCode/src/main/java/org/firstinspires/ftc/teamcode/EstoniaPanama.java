@@ -40,11 +40,6 @@ import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
 import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
 import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
 import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
-import org.firstinspires.ftc.teamcode.mainModules.Autonomous;
-
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
 
@@ -65,8 +60,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     // ---- CHANGED: encoder & geometry placeholders (REPLACE with your values) ----
     // TICKS_PER_REV: encoder ticks per motor revolution
     private static final double TICKS_PER_REV = 560.0;      // <-- replace with your encoder
-    private static final double WHEEL_DIAMETER = 0.09;
-    ;    // meters, replace with your wheel diameter
+    private static final double WHEEL_DIAMETER = 0.09;;    // meters, replace with your wheel diameter
     private static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
     // robot geometry for kinematics: half distances (meters) - replace with your robot measurements
     private static final double HALF_WHEELBASE = 0.155;     // half distance front-back (m) - replace
@@ -74,7 +68,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
     @Override
     public void runOpMode() {
-
         boolean protect = true; // activate try/catch to protect the code
         boolean xDrive = true; // can toggle between xDrive and Tank drive
         int storedHomePositionTicks = 0;
@@ -103,14 +96,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
-
-        AprilTagProcessor aprilTag = new AprilTagProcessor.Builder().build();
-        VisionPortal visionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessor(aprilTag)
-                .build();
-
-        Autonomous autoHelper = new Autonomous();
 
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
@@ -262,12 +247,6 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 ballPusher.pushingBalls(-1);
             }
 
-            // Apriltag autonomous action
-            if (gamepad1.triangle) {
-                autoHelper.goToAprilTagAndBack(this, moveRobot, aprilTag, visionPortal);
-            } else {
-                autoHelper.reset(moveRobot); // stop and reset autonomous sequence
-            }
 
             // Apply motor control
             if (collectBallsAttached) {
@@ -291,6 +270,15 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             // save current positions for next loop
             lastDriveMotorPositions = curDriveMotorPositions.clone();
+
+            // ---- CHANGED: convert tick deltas -> linear displacements and call PoseEstimator.update ----
+            double dBL = ticksToDistance(deltaBL_ticks);
+            double dBR = ticksToDistance(deltaBR_ticks);
+            double dFR = ticksToDistance(deltaFR_ticks);
+            double dFL = ticksToDistance(deltaFL_ticks);
+
+            // order: back-left, back-right, front-right, front-left as you requested
+            poseEstimator.update(dBL, dBR, dFR, dFL);
 
 
             telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
@@ -338,4 +326,10 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             telemetry.update();
         } // This brace correctly closes the `while (opModeIsActive())` loop.
     } // This brace correctly closes the `runOpMode()` method.
+
+    // ---- CHANGED: helper to convert encoder ticks -> linear distance (meters) ----
+    private double ticksToDistance(int ticks) {
+        return ticks * (WHEEL_CIRCUMFERENCE / TICKS_PER_REV);
+    }
+
 } // This brace correctly closes the `EstoniaPanama` class.
