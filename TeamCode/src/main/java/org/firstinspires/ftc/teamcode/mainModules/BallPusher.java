@@ -21,7 +21,7 @@ public class BallPusher {
 
 
     private void mapMotors() {
-        motor = hardwareMap.get(DcMotorEx.class, "Motor_Port_1_EH");
+        motor = hardwareMap.get(DcMotorEx.class, "Motor_Port_1_CH");
 
         motor.setDirection(DcMotor.Direction.FORWARD);
 
@@ -35,7 +35,7 @@ public class BallPusher {
 
 
         if (direction > 0) {
-            extend(650);
+            extend(-650);
             motor.setPower(0);
         } else if (direction < 0) {
             extend(0);

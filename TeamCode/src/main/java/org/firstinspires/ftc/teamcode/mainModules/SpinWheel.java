@@ -18,7 +18,7 @@ public class SpinWheel {
     }
 
     private void mapServo() {
-        wheelServo = hardwareMap.get(Servo.class, "Servo_Port_0_EH");
+        wheelServo = hardwareMap.get(Servo.class, "Servo_Port_0_CH");
         wheelServo.setDirection(Servo.Direction.FORWARD);
     }
 
