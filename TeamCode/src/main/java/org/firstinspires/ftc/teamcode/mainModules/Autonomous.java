@@ -22,7 +22,6 @@ public class Autonomous {
     public void showAprilTagData() {
         // example: helper posts telemetry like the sample
         aprilTagManager.sendTelemetry();
-        telemetry.addData("showingdata ", "t");
     }
 
     public void stopApril() {
