@@ -8,8 +8,7 @@ public class HardwareConstants {
     public static final String RIGHT_BACK_MOTOR = "Motor_Port_0_EH";
 
     // Rope motors
-    public static final String LEFT_ROPE_MOTOR = "Motor_Port_2_CH";
-    public static final String RIGHT_ROPE_MOTOR = "Motor_Port_1_CH";
+    public static final String ROPE_MOTOR = "Motor_Port_1_EH";
     // Other gadgets' motors
     public static final String WHEEL_SERVO_MOTOR = "Motor_Port_0_CH";
     public static final String BALL_PUSHER_MOTOR = "Motor_Port_1_CH";
