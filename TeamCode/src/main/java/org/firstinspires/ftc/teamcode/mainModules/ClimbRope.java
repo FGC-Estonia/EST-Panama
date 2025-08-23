@@ -5,12 +5,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
 
 public class ClimbRope {
-    private DcMotorEx motor = null;
+    private DcMotorEx climbMotor = null;
+    private Servo leftMoveServo;
+    private Servo rightMoveServo;
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
@@ -18,7 +21,7 @@ public class ClimbRope {
     private final double STAY_ON_RATE = 0.1;
     boolean resettingPosition = false;
     private int storedHomePositionTicks = 0;
-    // Define constants for your motor and gearing
+    // Define constants for your climbMotor and gearing
     private static final double REV_HD_HEX_MOTOR_TICKS_PER_MOTOR_REV = 28.0; // From REV HD Hex Motor spec
     private static final double GEAR_RATIO_1 = 5.23;
     private static final double GEAR_RATIO_2 = 3.61;
@@ -36,13 +39,29 @@ public class ClimbRope {
     }
 
     private void mapMotors() {
-        motor = hardwareMap.get(DcMotorEx.class, HardwareConstants.ROPE_MOTOR);
+        try {
+            leftMoveServo = hardwareMap.get(Servo.class, "Motor_Port_0_CH");
+            leftMoveServo.setDirection(Servo.Direction.FORWARD);
+        } catch (Exception e) {
+            leftMoveServo = null;
+            System.out.println("Left rope slide motor not found.");
+        }
 
-        motor.setDirection(DcMotor.Direction.REVERSE);
+        try {
+            rightMoveServo = hardwareMap.get(Servo.class, "Motor_Port_1_CH"); // changed to avoid same port
+            rightMoveServo.setDirection(Servo.Direction.REVERSE);
+        } catch (Exception e) {
+            rightMoveServo = null;
+            System.out.println("Right rope slide motor not found.");
+        }
 
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        climbMotor = hardwareMap.get(DcMotorEx.class, HardwareConstants.ROPE_MOTOR);
 
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        climbMotor.setDirection(DcMotor.Direction.REVERSE);
+
+        climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        climbMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public enum RopeID {
@@ -72,7 +91,7 @@ public class ClimbRope {
 
     // ROTATING TO POS DOESN'T REALLY WORK
     public void rotateToHome() {
-        int currentFullPosition = motor.getCurrentPosition();
+        int currentFullPosition = climbMotor.getCurrentPosition();
         int currentAngularOffset = currentFullPosition % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
 
         // Handle negative currentAngularOffset
@@ -98,36 +117,36 @@ public class ClimbRope {
         rotateToPosition(targetFullPosition);
     }
     public void rotateToPosition(int targetTicks) {
-        // This tells the motor controller to use the encoders to reach a specific target.
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // This tells the climbMotor controller to use the encoders to reach a specific target.
+        climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // The motors will try to reach this absolute encoder count.
-        motor.setTargetPosition(targetTicks);
+        climbMotor.setTargetPosition(targetTicks);
 
         // This power (from 0.0 to 1.0) acts as the maximum speed the motors will use
         // to try and reach their target. The controller will vary the power to slow down
         // as it approaches the target.
-        motor.setPower(1.0); // Full power for movement
+        climbMotor.setPower(1.0); // Full power for movement
 
         // Wait until the motors reach their target or a timeout occurs.
         long startTime = System.currentTimeMillis();
         long timeoutMillis = 10000; // 10 seconds timeout. Adjust this value based on your mechanism's speed and travel distance.
 
         // Loop while the OpMode is active, at least one motor is still moving, AND the timeout hasn't been reached.
-        while ((motor.isBusy()) && (System.currentTimeMillis() - startTime < timeoutMillis)) {
+        while ((climbMotor.isBusy()) && (System.currentTimeMillis() - startTime < timeoutMillis)) {
             // Provide real-time feedback on the Driver Station for debugging.
-            telemetry.addData("Left Target", motor.getTargetPosition());
+            telemetry.addData("Left Target", climbMotor.getTargetPosition());
             telemetry.update();
         }
 
         // Stop the motors once they reach the target or the loop exits (e.g., due to timeout).
-        motor.setPower(0);
+        climbMotor.setPower(0);
 
         // Set motors back to RUN_WITHOUT_ENCODER mode.
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     public int rememberHomePosition(){
-        storedHomePositionTicks = motor.getCurrentPosition() % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        storedHomePositionTicks = climbMotor.getCurrentPosition() % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
         if (storedHomePositionTicks < 0) {
             storedHomePositionTicks += TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
         }
@@ -152,6 +171,18 @@ public class ClimbRope {
             power = 0;
         }
 
-        motor.setPower(power);
+        climbMotor.setPower(power);
+    }
+
+    public void slide(boolean open) {
+        if (leftMoveServo == null) return;
+
+        if (open) {
+            leftMoveServo.setPosition(1);
+            rightMoveServo.setPosition(1);
+        } else {
+            leftMoveServo.setPosition(0);
+            rightMoveServo.setPosition(0);
+        }
     }
 }
