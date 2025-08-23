@@ -160,6 +160,7 @@ public class ClimbRope {
             leftPower = STAY_ON_RATE;
             rightPower = STAY_ON_RATE;
         } else if (direction == 3) {
+            telemetry.addData("Joystick powering: ", stick);
             leftPower = (stick + 1) * 0.6 - 0.2;
             rightPower = (stick + 1) * 0.6 - 0.2;
         } else {
