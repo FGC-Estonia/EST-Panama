@@ -3,14 +3,14 @@ package org.firstinspires.ftc.teamcode.mainModules;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
 
 public class ClimbRope {
-    private DcMotorEx leftMotor = null;
-    private DcMotorEx rightMotor = null;
+    private DcMotorEx motor = null;
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
@@ -36,17 +36,13 @@ public class ClimbRope {
     }
 
     private void mapMotors() {
-        leftMotor = hardwareMap.get(DcMotorEx.class, HardwareConstants.LEFT_ROPE_MOTOR);
-        rightMotor = hardwareMap.get(DcMotorEx.class, HardwareConstants.RIGHT_ROPE_MOTOR);
+        motor = hardwareMap.get(DcMotorEx.class, HardwareConstants.ROPE_MOTOR);
 
-        leftMotor.setDirection(DcMotor.Direction.FORWARD);
-        rightMotor.setDirection(DcMotor.Direction.REVERSE);
+        motor.setDirection(DcMotor.Direction.REVERSE);
 
-        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public enum RopeID {
@@ -76,7 +72,7 @@ public class ClimbRope {
 
     // ROTATING TO POS DOESN'T REALLY WORK
     public void rotateToHome() {
-        int currentFullPosition = leftMotor.getCurrentPosition();
+        int currentFullPosition = motor.getCurrentPosition();
         int currentAngularOffset = currentFullPosition % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
 
         // Handle negative currentAngularOffset
@@ -103,41 +99,35 @@ public class ClimbRope {
     }
     public void rotateToPosition(int targetTicks) {
         // This tells the motor controller to use the encoders to reach a specific target.
-        leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // The motors will try to reach this absolute encoder count.
-        leftMotor.setTargetPosition(targetTicks);
-        rightMotor.setTargetPosition(targetTicks); // Assuming both motors move to the same target
+        motor.setTargetPosition(targetTicks);
 
         // This power (from 0.0 to 1.0) acts as the maximum speed the motors will use
         // to try and reach their target. The controller will vary the power to slow down
         // as it approaches the target.
-        leftMotor.setPower(1.0); // Full power for movement
-        rightMotor.setPower(1.0);
+        motor.setPower(1.0); // Full power for movement
 
         // Wait until the motors reach their target or a timeout occurs.
         long startTime = System.currentTimeMillis();
         long timeoutMillis = 10000; // 10 seconds timeout. Adjust this value based on your mechanism's speed and travel distance.
 
         // Loop while the OpMode is active, at least one motor is still moving, AND the timeout hasn't been reached.
-        while ((leftMotor.isBusy() || rightMotor.isBusy()) && (System.currentTimeMillis() - startTime < timeoutMillis)) {
+        while ((motor.isBusy()) && (System.currentTimeMillis() - startTime < timeoutMillis)) {
             // Provide real-time feedback on the Driver Station for debugging.
-            telemetry.addData("Left Target", leftMotor.getTargetPosition());
-            telemetry.addData("Right Target", rightMotor.getTargetPosition());
+            telemetry.addData("Left Target", motor.getTargetPosition());
             telemetry.update();
         }
 
         // Stop the motors once they reach the target or the loop exits (e.g., due to timeout).
-        leftMotor.setPower(0);
-        rightMotor.setPower(0);
+        motor.setPower(0);
 
         // Set motors back to RUN_WITHOUT_ENCODER mode.
-        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     public int rememberHomePosition(){
-        storedHomePositionTicks = leftMotor.getCurrentPosition() % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
+        storedHomePositionTicks = motor.getCurrentPosition() % TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
         if (storedHomePositionTicks < 0) {
             storedHomePositionTicks += TICKS_PER_OUTPUT_SHAFT_REVOLUTION;
         }
@@ -148,27 +138,20 @@ public class ClimbRope {
         double thingy = 0.6;
         if (resettingPosition) {return;}
 
-        double leftPower, rightPower;
+        double power;
 
         if (direction == 2) {  // Climb up
-            leftPower = 1.0;
-            rightPower = 1.0;
+            power = 1.0;
         } else if (direction == -1) {  // Climb down slowly
-            leftPower = -CLIMB_DOWN_RATE;
-            rightPower = -CLIMB_DOWN_RATE;
+            power = -CLIMB_DOWN_RATE;
         } else if (direction == 1) {
-            leftPower = STAY_ON_RATE;
-            rightPower = STAY_ON_RATE;
+            power = STAY_ON_RATE;
         } else if (direction == 3) {
-            telemetry.addData("Joystick powering: ", stick);
-            leftPower = (stick + 1) * 0.6 - 0.2;
-            rightPower = (stick + 1) * 0.6 - 0.2;
+            power = (stick + 1) * 0.6 - 0.2;
         } else {
-            leftPower = 0;
-            rightPower = 0;
+            power = 0;
         }
 
-        leftMotor.setPower(leftPower);
-        rightMotor.setPower(rightPower);
+        motor.setPower(power);
     }
 }
