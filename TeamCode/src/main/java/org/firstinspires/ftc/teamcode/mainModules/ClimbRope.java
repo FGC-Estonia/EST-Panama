@@ -188,7 +188,7 @@ public class ClimbRope {
         // Create a new thread to reset after delay
         new Thread(() -> {
             try {
-                Thread.sleep(1000); // wait 1 second (1000 ms)
+                Thread.sleep(5000); // wait 1 second (1000 ms)
                 leftMoveServo.setPosition(0.5);
                 rightMoveServo.setPosition(0.5);
             } catch (InterruptedException e) {

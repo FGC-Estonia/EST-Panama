@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.mainModules;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -90,8 +91,8 @@ public class MoveRobotTank implements DriveBaseController {
         leftDrive = hardwareMap.get(DcMotorEx.class, HardwareConstants.TANK_LEFT_MOTOR);
         rightDrive = hardwareMap.get(DcMotorEx.class, HardwareConstants.TANK_RIGHT_MOTOR);
 
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

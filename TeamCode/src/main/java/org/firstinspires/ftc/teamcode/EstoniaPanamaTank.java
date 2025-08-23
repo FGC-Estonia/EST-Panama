@@ -43,10 +43,9 @@ import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank;
 import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
-import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
 import org.firstinspires.ftc.teamcode.mainModules.ThrowBalls;
 
-@TeleOp(name = "Main code Estonia Panama")
+@TeleOp(name = "Side code tank")
 // allows to display the code in the driver station, comment out to remove
 public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
     int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down, 3 - joystick
@@ -104,7 +103,6 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
         // MoveRobot moveRobot = new MoveRobot(protect, hardwareMap, telemetry, true);
         //MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
-        SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
         //Autonomous autonomous = new Autonomous(moveRobot, hardwareMap,telemetry);
         ThrowBalls throwBalls = new ThrowBalls(hardwareMap, telemetry);
 
@@ -255,12 +253,12 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
 
                 }
 
-                spinWheel.spin(true);
+                //spinWheel.spin(true);
                 isSpinningWheel = true;
                 spinWheelStartTime = (float) runtime.seconds();
             } else {
                 isSpinningWheel = false;
-                spinWheel.stop();
+                //spinWheel.stop();
             }
 
             //Collecting balls
@@ -297,27 +295,11 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
                 throwBalls.stop();
             }
 
-            // ---- CHANGED: read 4 encoder positions via driveBase ----
-// Expecting order: {back-left, back-right, front-right, front-left}
-            int[] curDriveMotorPositions = driveBase.getEncoderPositions();
 
-// ---- CHANGED: compute tick deltas per wheel ----
-            int deltaBL_ticks = curDriveMotorPositions[0] - lastDriveMotorPositions[0];
-            int deltaBR_ticks = curDriveMotorPositions[1] - lastDriveMotorPositions[1];
-            int deltaFR_ticks = curDriveMotorPositions[2] - lastDriveMotorPositions[2];
-            int deltaFL_ticks = curDriveMotorPositions[3] - lastDriveMotorPositions[3];
 
-            // save current positions for next loop
-            lastDriveMotorPositions = curDriveMotorPositions.clone();
 
-            // ---- CHANGED: convert tick deltas -> linear displacements and call PoseEstimator.update ----
-            double dBL = ticksToDistance(deltaBL_ticks);
-            double dBR = ticksToDistance(deltaBR_ticks);
-            double dFR = ticksToDistance(deltaFR_ticks);
-            double dFL = ticksToDistance(deltaFL_ticks);
 
-            // order: back-left, back-right, front-right, front-left as you requested
-            poseEstimator.update(dBL, dBR, dFR, dFL);
+
 
 
             telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
