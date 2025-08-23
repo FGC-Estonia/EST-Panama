@@ -175,7 +175,7 @@ public class ClimbRope {
     }
 
     public void slide(boolean open) {
-        if (leftMoveServo == null) return;
+        if (leftMoveServo == null || rightMoveServo == null) return;
 
         if (open) {
             leftMoveServo.setPosition(1);
@@ -184,5 +184,17 @@ public class ClimbRope {
             leftMoveServo.setPosition(0);
             rightMoveServo.setPosition(0);
         }
+
+        // Create a new thread to reset after delay
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000); // wait 1 second (1000 ms)
+                leftMoveServo.setPosition(0.5);
+                rightMoveServo.setPosition(0.5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
+
 }
