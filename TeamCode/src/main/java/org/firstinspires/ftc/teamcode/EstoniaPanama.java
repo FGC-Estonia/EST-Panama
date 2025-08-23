@@ -74,12 +74,9 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
-        boolean xDrive = true; // can toggle between xDrive and Tank drive
-        if (xDrive) {
-            driveBase = new MoveRobot(protect, hardwareMap, telemetry, true);
-        } else {
-            driveBase = new MoveRobotTank(protect, hardwareMap, telemetry, true);
-        }
+
+        driveBase = new MoveRobot(protect, hardwareMap, telemetry, true);
+
         int storedHomePositionTicks = 0;
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
@@ -96,7 +93,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
          * RunMotor runMotor = new RunMotor(hardwareMap, telemetry);
          */
 
-        ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry, xDrive);
+        ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry, true);
 
         // ---- CHANGED: Construct PoseEstimator with geometry ----
         PoseEstimator poseEstimator = new PoseEstimator(imuManager, HALF_WHEELBASE, HALF_TRACK);

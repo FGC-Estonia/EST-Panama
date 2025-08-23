@@ -87,8 +87,8 @@ public class MoveRobotTank implements DriveBaseController {
     }
 
     private void mapMotors() {
-        leftDrive = hardwareMap.get(DcMotorEx.class, HardwareConstants.LEFT_BACK_MOTOR);
-        rightDrive = hardwareMap.get(DcMotorEx.class, HardwareConstants.RIGHT_BACK_MOTOR);
+        leftDrive = hardwareMap.get(DcMotorEx.class, HardwareConstants.TANK_LEFT_MOTOR);
+        rightDrive = hardwareMap.get(DcMotorEx.class, HardwareConstants.TANK_RIGHT_MOTOR);
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
