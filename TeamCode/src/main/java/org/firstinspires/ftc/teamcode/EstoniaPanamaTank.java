@@ -72,6 +72,7 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
     boolean fieldCentric = false;
     DriveBaseController driveBase;
 
+
     @Override
     public void runOpMode() {
         boolean protect = true; // activate try/catch to protect the code
@@ -157,6 +158,7 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
         // For FieldCentric toggle and GyroReset
         Presses gamepad1_share = new Presses();
         Presses gamepad1_options = new Presses();
+        Presses gamepad2_options = new Presses();
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
         Presses gamepad1_square = new Presses(speedSelectToggle);
@@ -228,6 +230,13 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
 
             if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
                 climbRope.rotateToHome();
+            }
+
+
+            if (gamepad1_options.toggle(gamepad1.options)  && ropeClimbingAttached) {
+                climbRope.slide(true);
+            } else if (ropeClimbingAttached) {
+                climbRope.slide(false);
             }
 
             //Spinning wheel
