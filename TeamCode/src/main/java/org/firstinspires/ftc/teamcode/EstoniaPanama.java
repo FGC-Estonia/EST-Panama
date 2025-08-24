@@ -72,7 +72,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
     DriveBaseController driveBase;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         boolean protect = true; // activate try/catch to protect the code
 
         driveBase = new MoveRobot(protect, hardwareMap, telemetry, true);
@@ -262,10 +262,10 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
 
             if (gamepad2_cross.toggle((gamepad2.cross))) {
-                ballPusher.pushingBalls(1);
+                ballPusher.open(1000);
                 openedBallPusher = true;
             } else if (!gamepad2_cross.toggle((gamepad2.cross)) && openedBallPusher) {
-                ballPusher.pushingBalls(-1);
+                ballPusher.close(1000);
             }
 
 

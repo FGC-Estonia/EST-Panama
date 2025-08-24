@@ -3,13 +3,15 @@ package org.firstinspires.ftc.teamcode.mainModules;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
 
 public class BallPusher {
 
-    private DcMotorEx motor = null;
+    private Servo leftMotor = null;
+    private Servo rightMotor = null;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
 
@@ -21,34 +23,40 @@ public class BallPusher {
 
 
     private void mapMotors() {
-        motor = hardwareMap.get(DcMotorEx.class, HardwareConstants.BALL_PUSHER_MOTOR);
+        try {
+            leftMotor = hardwareMap.get(Servo.class, HardwareConstants.BALL_PUSHER_MOTOR_LEFT);
+            rightMotor = hardwareMap.get(Servo.class, HardwareConstants.BALL_PUSHER_MOTOR_RIGHT);
 
-        motor.setDirection(DcMotor.Direction.FORWARD);
-
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // Reset encoder here
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-    }
-
-    public void pushingBalls(int direction) {
-
-
-        if (direction > 0) {
-            extend(-650);
-            motor.setPower(0);
-        } else if (direction < 0) {
-            extend(0);
-            motor.setPower(0);
+            leftMotor.setDirection(Servo.Direction.FORWARD);
+            rightMotor.setDirection(Servo.Direction.REVERSE);
+        } catch (Exception e) {
+            e.printStackTrace(); // logs the error for debugging
         }
-
-        motor.setPower(direction);
-        telemetry.addData("Distance", motor.getCurrentPosition());
     }
 
-    public void extend(int distance) {
-        motor.setTargetPosition(distance); //1000(height mm)/(6mm(hex shaft diameter)*3 ,14)*28(ticks per rotation)
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //runs to position
 
+    public void open(float time) throws InterruptedException {
+        if (leftMotor == null) return;
+
+        leftMotor.setPosition(1);
+        rightMotor.setPosition(1);
+
+        Thread.sleep((long)(time * 1000)); // convert seconds to ms
+
+        leftMotor.setPosition(0.5);
+        rightMotor.setPosition(0.5);
     }
+
+    public void close(float time) throws InterruptedException {
+        if (leftMotor == null) return;
+
+        leftMotor.setPosition(0);
+        rightMotor.setPosition(0);
+
+        Thread.sleep((long)(time * 1000)); // convert seconds to ms
+
+        leftMotor.setPosition(0.5);
+        rightMotor.setPosition(0.5);
+    }
+
 }
