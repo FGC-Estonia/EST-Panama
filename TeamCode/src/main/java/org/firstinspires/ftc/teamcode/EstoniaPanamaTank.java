@@ -269,13 +269,13 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
             } else {
                 collectingDirection = 0;  // hold
             }
-
+/*
             if (gamepad2_cross.toggle((gamepad2.cross))) {
                 ballPusher.pushingBalls(1);
                 openedBallPusher = true;
             } else if (!gamepad2_cross.toggle((gamepad2.cross)) && openedBallPusher) {
                 ballPusher.pushingBalls(-1);
-            }
+            }*/
 
 
             // Apply motor control

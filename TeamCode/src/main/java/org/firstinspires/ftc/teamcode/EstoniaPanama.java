@@ -53,8 +53,10 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
     // ---- CHANGED: lastDriveMotorPositions length 4 for BL,BR,FR,FL ----
     int[] lastDriveMotorPositions = {0, 0, 0, 0};
+    boolean openedBallPusherLeft = false;
+    boolean openedBallPusherRight = false;
 
-    boolean openedBallPusher = false;
+
     boolean isSpinningWheel = false;
     ElapsedTime runtime = new ElapsedTime();
     float spinWheelStartTime = (float) runtime.seconds();
@@ -220,11 +222,11 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection, gamepad2.left_stick_y);
             }
-            if (gamepad2_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
+            if (gamepad2_dpad_up.pressed(gamepad2.dpad_up) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
             }
 
-            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
+            if (gamepad2_dpad_down.pressed(gamepad2.dpad_down) && ropeClimbingAttached) {
                 climbRope.rotateToHome();
             }
 
@@ -261,12 +263,12 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 collectingDirection = 0;  // hold
             }
 
-            if (gamepad2_cross.toggle((gamepad2.cross))) {
-                ballPusher.open(1000);
-                openedBallPusher = true;
-            } else if (!gamepad2_cross.toggle((gamepad2.cross)) && openedBallPusher) {
-                ballPusher.close(1000);
-            }
+
+
+            /*
+            telemetry.addData("opened ball pusher", openedBallPusher);
+            telemetry.addData("need open ball pusher", needToOpenBallPusher);
+            telemetry.addData("holdiong cross", gamepad2.cross);*/
 
 
             // Apply motor control
@@ -277,6 +279,29 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             //poseestimator
             if (gamepad1.circle) {
                 poseEstimator.resetPoseEstimate();
+            }
+
+            //ball pusher
+
+            boolean needToOpenBallPusherLeft = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
+
+            if (needToOpenBallPusherLeft && !openedBallPusherLeft) {
+                openedBallPusherLeft = true;
+                ballPusher.openLeft(1400);
+            } else if (!needToOpenBallPusherLeft && openedBallPusherLeft) {
+                openedBallPusherLeft = false;
+                ballPusher.closeLeft(1600);
+            }
+
+            boolean needToOpenBallPusherRight = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
+
+
+            if (needToOpenBallPusherRight && !openedBallPusherRight) {
+                openedBallPusherRight = true;
+                ballPusher.openRight(1800);
+            } else if (!needToOpenBallPusherRight && openedBallPusherRight) {
+                openedBallPusherRight = false;
+                ballPusher.closeRight(2300);
             }
 
             // ---- CHANGED: read 4 encoder positions via driveBase ----

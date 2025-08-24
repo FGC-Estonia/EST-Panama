@@ -27,35 +27,51 @@ public class BallPusher {
             leftMotor = hardwareMap.get(Servo.class, HardwareConstants.BALL_PUSHER_MOTOR_LEFT);
             rightMotor = hardwareMap.get(Servo.class, HardwareConstants.BALL_PUSHER_MOTOR_RIGHT);
 
-            leftMotor.setDirection(Servo.Direction.FORWARD);
-            rightMotor.setDirection(Servo.Direction.REVERSE);
+            leftMotor.setDirection(Servo.Direction.REVERSE);
+            rightMotor.setDirection(Servo.Direction.FORWARD);
         } catch (Exception e) {
             e.printStackTrace(); // logs the error for debugging
         }
     }
 
 
-    public void open(float time) throws InterruptedException {
+    public void openLeft(float time) throws InterruptedException {
         if (leftMotor == null) return;
 
         leftMotor.setPosition(1);
-        rightMotor.setPosition(1);
 
-        Thread.sleep((long)(time * 1000)); // convert seconds to ms
+        Thread.sleep((long)(time)); // convert seconds to ms
 
         leftMotor.setPosition(0.5);
+    }
+
+    public void openRight(float time) throws InterruptedException {
+        if (rightMotor == null) return;
+
+        rightMotor.setPosition(1);
+
+        Thread.sleep((long)(time)); // convert seconds to ms
+
         rightMotor.setPosition(0.5);
     }
 
-    public void close(float time) throws InterruptedException {
+    public void closeLeft(float time) throws InterruptedException {
         if (leftMotor == null) return;
 
         leftMotor.setPosition(0);
-        rightMotor.setPosition(0);
 
-        Thread.sleep((long)(time * 1000)); // convert seconds to ms
+        Thread.sleep((long)(time)); // convert seconds to ms
 
         leftMotor.setPosition(0.5);
+    }
+
+    public void closeRight(float time) throws InterruptedException {
+        if (rightMotor == null) return;
+
+        rightMotor.setPosition(0);
+
+        Thread.sleep((long)(time)); // convert seconds to ms
+
         rightMotor.setPosition(0.5);
     }
 
