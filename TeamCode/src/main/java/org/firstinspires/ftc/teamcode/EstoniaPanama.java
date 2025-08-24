@@ -220,7 +220,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             // Apply motor control
             if (ropeClimbingAttached) {
-                climbRope.ropeClimbing(climbingDirection, gamepad2.left_stick_y);
+                climbRope.ropeClimbing(climbingDirection, -gamepad2.left_stick_y);
             }
             if (gamepad2_dpad_up.pressed(gamepad2.dpad_up) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
