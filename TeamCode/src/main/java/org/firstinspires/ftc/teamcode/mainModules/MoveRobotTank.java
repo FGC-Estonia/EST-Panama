@@ -132,7 +132,7 @@ public class MoveRobotTank implements DriveBaseController {
         telemetry.addData("Gear", gear.telemetryName);
 
         // before limiting:
-        double rawDrive = applyDeadzone(frontBack, DRIVE_DEADZONE);
+        double rawDrive = -applyDeadzone(frontBack, DRIVE_DEADZONE);
         double rawTurn  = applyDeadzone(turnInput, TURN_DEADZONE) * turnSpeed;
 
         // --- Counterstrife logic for drive and turn ---
@@ -161,8 +161,10 @@ public class MoveRobotTank implements DriveBaseController {
 
         if (stationaryTurn) {
             // on-the-spot pivot
-            leftTargetPower  = drive + turn * Math.pow(turn / MAX_TURN_SPEED, 2);
-            rightTargetPower = drive - turn * Math.pow(turn / MAX_TURN_SPEED, 2);
+            //leftTargetPower  = drive + turn * Math.pow(turn / MAX_TURN_SPEED, 2);
+            //rightTargetPower = drive - turn * Math.pow(turn / MAX_TURN_SPEED, 2);
+            leftTargetPower  = drive + turn;
+            rightTargetPower = drive - turn;
         } else {
             // smooth curvature drive
             leftTargetPower  = drive + turn;
