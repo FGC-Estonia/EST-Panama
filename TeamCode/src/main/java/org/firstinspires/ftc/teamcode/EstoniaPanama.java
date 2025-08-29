@@ -282,7 +282,15 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
 
             //ball pusher
+            if (gamepad2.right_stick_y > 0.3) {
+                ballPusher.setMotorStatuses(1);
+            } else if (gamepad2.right_stick_y < -0.3) {
+                ballPusher.setMotorStatuses(0);
+            } else {
+                ballPusher.setMotorStatuses(0.5);
+            }
 
+            /*
             boolean needToOpenBallPusherLeft = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
 
             if (needToOpenBallPusherLeft && !openedBallPusherLeft) {
@@ -302,7 +310,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             } else if (!needToOpenBallPusherRight && openedBallPusherRight) {
                 openedBallPusherRight = false;
                 ballPusher.closeRight(2300);
-            }
+            }*/
 
             // ---- CHANGED: read 4 encoder positions via driveBase ----
 // Expecting order: {back-left, back-right, front-right, front-left}

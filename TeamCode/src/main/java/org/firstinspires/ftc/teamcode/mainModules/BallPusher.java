@@ -34,45 +34,32 @@ public class BallPusher {
         }
     }
 
+    public void setMotorStatuses(double status) {
+        if (leftMotor == null || rightMotor == null) return;
 
-    public void openLeft(float time) throws InterruptedException {
-        if (leftMotor == null) return;
+        leftMotor.setPosition(status);
+        rightMotor.setPosition(status);  //1 - opening; 0.5 - stay; 0 - close
+    }
 
-        leftMotor.setPosition(1);
+    public void open(float time) throws InterruptedException {
+        setMotorStatuses(1);
 
         Thread.sleep((long)(time)); // convert seconds to ms
 
-        leftMotor.setPosition(0.5);
+        setMotorStatuses(0.5);
     }
 
-    public void openRight(float time) throws InterruptedException {
-        if (rightMotor == null) return;
 
-        rightMotor.setPosition(1);
+
+    public void close(float time) throws InterruptedException {
+        setMotorStatuses(0);
 
         Thread.sleep((long)(time)); // convert seconds to ms
 
-        rightMotor.setPosition(0.5);
+        setMotorStatuses(0.5);
     }
 
-    public void closeLeft(float time) throws InterruptedException {
-        if (leftMotor == null) return;
 
-        leftMotor.setPosition(0);
 
-        Thread.sleep((long)(time)); // convert seconds to ms
-
-        leftMotor.setPosition(0.5);
-    }
-
-    public void closeRight(float time) throws InterruptedException {
-        if (rightMotor == null) return;
-
-        rightMotor.setPosition(0);
-
-        Thread.sleep((long)(time)); // convert seconds to ms
-
-        rightMotor.setPosition(0.5);
-    }
 
 }
