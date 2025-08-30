@@ -136,16 +136,16 @@ public class MoveRobotTank implements DriveBaseController {
         double rawTurn  = applyDeadzone(turnInput, TURN_DEADZONE) * turnSpeed;
 
         // --- Counterstrife logic for drive and turn ---
-        boolean reversingDrive = (Math.signum(rawDrive) != Math.signum(lastDrive)) && lastDrive != 0 && (Math.abs(rawDrive) > 0.05);
-        boolean reversingTurn  = (Math.signum(rawTurn)  != Math.signum(lastTurn)) && lastTurn != 0 && (Math.abs(rawTurn) > 0.05);
+        //boolean reversingDrive = (Math.signum(rawDrive) != Math.signum(lastDrive)) && lastDrive != 0 && (Math.abs(rawDrive) > 0.05);
+        //boolean reversingTurn  = (Math.signum(rawTurn)  != Math.signum(lastTurn)) && lastTurn != 0 && (Math.abs(rawTurn) > 0.05);
 
         // cubic scaling:
         double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
-        boolean stationaryTurn = Math.abs(drive) < STATIONARY_TURN_THRESHOLD;
+        //boolean stationaryTurn = Math.abs(drive) < STATIONARY_TURN_THRESHOLD;
 
         double rawTurnCubed = Math.pow(rawTurn, 3);
-        double turn = stationaryTurn ? rawTurnCubed : rawTurnCubed;
-        turn = Math.copySign(Math.min(Math.abs(turn), MAX_TURN_SPEED), turn);
+        //double turn = stationaryTurn ? rawTurnCubed : rawTurnCubed;
+        double turn = Math.copySign(Math.min(Math.abs(rawTurnCubed), MAX_TURN_SPEED), rawTurnCubed);
 
         drive = (rawDrive == 0) ? 0 : drive;
         turn  = (rawTurn == 0) ? 0 : turn;
@@ -159,7 +159,10 @@ public class MoveRobotTank implements DriveBaseController {
 
         double leftTargetPower, rightTargetPower;
 
-        if (stationaryTurn) {
+        leftTargetPower  = drive + turn;
+        rightTargetPower = drive - turn;
+
+        /*if (stationaryTurn) {
             // on-the-spot pivot
             //leftTargetPower  = drive + turn * Math.pow(turn / MAX_TURN_SPEED, 2);
             //rightTargetPower = drive - turn * Math.pow(turn / MAX_TURN_SPEED, 2);
@@ -175,9 +178,9 @@ public class MoveRobotTank implements DriveBaseController {
                 leftTargetPower /= maxAbsPower;
                 rightTargetPower /= maxAbsPower;
             }
-        }
+        }*/
 
-        telemetry.addData("use stationaryTurn ", stationaryTurn);
+        //telemetry.addData("use stationaryTurn ", stationaryTurn);
 
         // Heading hold
         double avgInput = (leftTargetPower + rightTargetPower) / 2;

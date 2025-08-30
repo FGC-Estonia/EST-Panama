@@ -53,8 +53,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
     // ---- CHANGED: lastDriveMotorPositions length 4 for BL,BR,FR,FL ----
     int[] lastDriveMotorPositions = {0, 0, 0, 0};
-    boolean openedBallPusherLeft = false;
-    boolean openedBallPusherRight = false;
+    boolean openedBallPusher = false;
 
 
     boolean isSpinningWheel = false;
@@ -290,27 +289,17 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 ballPusher.setMotorStatuses(0.5);
             }
 
-            /*
-            boolean needToOpenBallPusherLeft = gamepad2_dpad_left.toggle(gamepad2.dpad_left);
 
-            if (needToOpenBallPusherLeft && !openedBallPusherLeft) {
-                openedBallPusherLeft = true;
-                ballPusher.openLeft(1400);
-            } else if (!needToOpenBallPusherLeft && openedBallPusherLeft) {
-                openedBallPusherLeft = false;
-                ballPusher.closeLeft(1600);
+            boolean needToOpenBallPusher = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
+
+            if (needToOpenBallPusher && !openedBallPusher) {
+                openedBallPusher = true;
+                ballPusher.open(1400);
+            } else if (!needToOpenBallPusher && openedBallPusher) {
+                openedBallPusher = false;
+                ballPusher.close(1600);
             }
 
-            boolean needToOpenBallPusherRight = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
-
-
-            if (needToOpenBallPusherRight && !openedBallPusherRight) {
-                openedBallPusherRight = true;
-                ballPusher.openRight(1800);
-            } else if (!needToOpenBallPusherRight && openedBallPusherRight) {
-                openedBallPusherRight = false;
-                ballPusher.closeRight(2300);
-            }*/
 
             // ---- CHANGED: read 4 encoder positions via driveBase ----
 // Expecting order: {back-left, back-right, front-right, front-left}

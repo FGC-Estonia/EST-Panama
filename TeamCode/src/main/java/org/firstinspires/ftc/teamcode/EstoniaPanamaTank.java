@@ -220,7 +220,7 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
 
             // Apply motor control
             if (ropeClimbingAttached) {
-                climbRope.ropeClimbing(climbingDirection, gamepad2.left_stick_y);
+                climbRope.ropeClimbing(climbingDirection, -gamepad2.left_stick_y);
             }
             if (gamepad2_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
@@ -231,11 +231,17 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
             }
 
 
-            if (gamepad1_options.toggle(gamepad1.options)  && ropeClimbingAttached) {
+            if (gamepad2.dpad_up && ropeClimbingAttached) {
                 climbRope.slide(true);
-            } else if (ropeClimbingAttached) {
+            } else if (gamepad2.dpad_down && ropeClimbingAttached) {
                 climbRope.slide(false);
             }
+
+            if (ropeClimbingAttached) {
+                climbRope.showDigPort();
+            }
+
+
 
             //Spinning wheel
 
@@ -262,9 +268,9 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
             }
 
             //Collecting balls
-            if (gamepad2.right_trigger > 0) {
+            if (gamepad2.right_trigger > 0.2) {
                 collectingDirection = 1;  // suck in
-            } else if (gamepad2.left_trigger > 0) {
+            } else if (gamepad2.left_trigger > 0.2) {
                 collectingDirection = -1; // let out
             } else {
                 collectingDirection = 0;  // hold
@@ -279,6 +285,7 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
 
 
             // Apply motor control
+            telemetry.addData("collect dir", collectingDirection);
             if (collectBallsAttached) {
                 collectBalls.collectingBalls(collectingDirection);
             }

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
@@ -14,6 +15,7 @@ public class ClimbRope {
     private DcMotorEx climbMotor = null;
     private Servo leftMoveServo;
     private Servo rightMoveServo;
+    private TouchSensor magneticLimitSwitch;
     private final boolean protect;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
@@ -40,20 +42,25 @@ public class ClimbRope {
 
     private void mapMotors() {
         try {
-            leftMoveServo = hardwareMap.get(Servo.class, "Motor_Port_0_CH");
-            leftMoveServo.setDirection(Servo.Direction.FORWARD);
+            leftMoveServo = hardwareMap.get(Servo.class, "Servo_Port_5_CH");
+            leftMoveServo.setDirection(Servo.Direction.REVERSE);
         } catch (Exception e) {
             leftMoveServo = null;
-            System.out.println("Left rope slide motor not found.");
         }
 
         try {
-            rightMoveServo = hardwareMap.get(Servo.class, "Motor_Port_1_CH"); // changed to avoid same port
-            rightMoveServo.setDirection(Servo.Direction.REVERSE);
+            rightMoveServo = hardwareMap.get(Servo.class, "Servo_Port_4_CH");
+            rightMoveServo.setDirection(Servo.Direction.FORWARD);
         } catch (Exception e) {
             rightMoveServo = null;
-            System.out.println("Right rope slide motor not found.");
         }
+
+        try {
+            magneticLimitSwitch = hardwareMap.get(TouchSensor.class, "Digital_Port_1_CH");
+        } catch (Exception e) {
+            magneticLimitSwitch = null;
+        }
+
 
         climbMotor = hardwareMap.get(DcMotorEx.class, HardwareConstants.ROPE_MOTOR);
 
@@ -175,26 +182,95 @@ public class ClimbRope {
     }
 
     public void slide(boolean open) {
-        if (leftMoveServo == null || rightMoveServo == null) return;
-
-        if (open) {
-            leftMoveServo.setPosition(1);
-            rightMoveServo.setPosition(1);
-        } else {
-            leftMoveServo.setPosition(0);
-            rightMoveServo.setPosition(0);
+        if (leftMoveServo == null || rightMoveServo == null) {
+            telemetry.addData("Slide", "Servos not mapped - abort");
+            telemetry.update();
+            try {
+                Thread.sleep(600);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            return;
         }
 
-        // Create a new thread to reset after delay
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000); // wait 1 second (1000 ms)
-                leftMoveServo.setPosition(0.5);
-                rightMoveServo.setPosition(0.5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+
+        if (open) {
+            telemetry.addData("Slide", "Opening...");
+            telemetry.update();
+
+            // extend
+            leftMoveServo.setPosition(1.0);
+            rightMoveServo.setPosition(1.0);
+
+            // Wait until magnetic limit switch detects magnet (active-low => getState()==false)
+            final long timeoutMs = 5000; // 3 seconds max
+            long start = System.currentTimeMillis();
+            boolean detected = false;
+
+            if (magneticLimitSwitch != null) {
+                while (System.currentTimeMillis() - start < timeoutMs) {
+                    // active-low sensor: false means magnet present / limit reached
+                    try {
+                        if (magneticLimitSwitch.isPressed()) {
+                            detected = true;
+                            break;
+                        }
+                    } catch (Exception e) {
+                        // sensor read failed; bail to timeout
+                        break;
+                    }
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            } else {
+                // No limit switch: wait a conservative default time
+                try {
+                    Thread.sleep(600);
+                    detected = true; // assume done after time
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
             }
-        }).start();
+
+            telemetry.addData("Slide", detected ? "Limit reached" : "Timeout");
+            telemetry.update();
+
+            // set to hold position
+            leftMoveServo.setPosition(0.5);
+            rightMoveServo.setPosition(0.5);
+        } else {
+            telemetry.addData("Slide", "Closing...");
+            telemetry.update();
+
+            // retract
+            leftMoveServo.setPosition(0.0);
+            rightMoveServo.setPosition(0.0);
+
+            // wait fixed 2000 ms for retract travel
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+
+            // set to hold position
+            leftMoveServo.setPosition(0.5);
+            rightMoveServo.setPosition(0.5);
+
+            telemetry.addData("Slide", "Closed - holding");
+            telemetry.update();
+        }
+    }
+
+    public void showDigPort() {
+        if (magneticLimitSwitch == null) {telemetry.addData("not mapped magnet", ""); return;}
+        telemetry.addData("magnet sensor:", magneticLimitSwitch.getValue());
+        telemetry.addData("magnet isPressed:", magneticLimitSwitch.isPressed());
     }
 
 }
