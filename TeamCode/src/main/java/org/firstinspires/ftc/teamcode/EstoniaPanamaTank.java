@@ -198,7 +198,7 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
                     // One long 500 ms rumble when turning ON
                     gamepad1.rumble(1.0, 1.0, 500);
                 } else {
-                    // Two short 100 ms rumbles when turning OFF
+                    // Short 100 ms rumble when turning OFF
                     gamepad1.rumble(0.6, 0.6, 100);
                 }
             }
