@@ -73,6 +73,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
     boolean fieldCentric = false;
     DriveBaseController driveBase;
+    boolean isFlagRaised = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -314,11 +315,13 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
 
             //flag
-            boolean flagRaised = gamepad2_share.toggle(gamepad2.share);
-            if (flagRaised && raiseFlagAttached) {
+            boolean needFlagRaised = gamepad2_share.toggle(gamepad2.share);
+            if (needFlagRaised && !isFlagRaised && raiseFlagAttached) {
                 raiseFlag.setPos(1);
-            } else if (!flagRaised && raiseFlagAttached) {
+                isFlagRaised = true;
+            } else if (!needFlagRaised && isFlagRaised && raiseFlagAttached) {
                 raiseFlag.setPos(0);
+                isFlagRaised = false;
             }
 
 
