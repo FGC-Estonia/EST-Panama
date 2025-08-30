@@ -29,6 +29,7 @@ d!   'W M@@@A  ][  M@@@A W`   !b
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.common.util.ImuManager;
@@ -40,6 +41,7 @@ import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
 import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
 import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
 import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
+import org.firstinspires.ftc.teamcode.mainModules.RaiseFlag;
 
 import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 
@@ -71,6 +73,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
     boolean fieldCentric = false;
     DriveBaseController driveBase;
+    boolean isFlagRaised = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -81,6 +84,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         int storedHomePositionTicks = 0;
         ClimbRope climbRope = null;
         boolean ropeClimbingAttached = false; // leave at false, it detects automatically
+        RaiseFlag raiseFlag = null;
+        boolean raiseFlagAttached = false;
         CollectBalls collectBalls = null;
         boolean collectBallsAttached = false; // leave at false, it detects automatically
         /*
@@ -109,6 +114,13 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
             ropeClimbingAttached = true;
+        } catch (Exception e) {
+            telemetry.log().add("ClimbRope hardware not found — rope climb disabled");
+        }
+
+        try {
+            raiseFlag = new RaiseFlag(hardwareMap, telemetry);
+            raiseFlagAttached = true;
         } catch (Exception e) {
             telemetry.log().add("ClimbRope hardware not found — rope climb disabled");
         }
@@ -156,6 +168,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         // For FieldCentric toggle and GyroReset
         Presses gamepad1_share = new Presses();
         Presses gamepad1_options = new Presses();
+
+        Presses gamepad2_share = new Presses();
 
         Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
         Presses gamepad1_square = new Presses(speedSelectToggle);
@@ -298,6 +312,16 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             } else if (!needToOpenBallPusher && openedBallPusher) {
                 openedBallPusher = false;
                 ballPusher.close(1600);
+            }
+
+            //flag
+            boolean needFlagRaised = gamepad2_share.toggle(gamepad2.share);
+            if (needFlagRaised && !isFlagRaised && raiseFlagAttached) {
+                raiseFlag.setPos(1);
+                isFlagRaised = true;
+            } else if (!needFlagRaised && isFlagRaised && raiseFlagAttached) {
+                raiseFlag.setPos(0);
+                isFlagRaised = false;
             }
 
 
