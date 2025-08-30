@@ -236,11 +236,11 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             if (ropeClimbingAttached) {
                 climbRope.ropeClimbing(climbingDirection, -gamepad2.left_stick_y);
             }
-            if (gamepad2_dpad_up.pressed(gamepad2.dpad_up) && ropeClimbingAttached) {
+            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
                 climbRope.rememberHomePosition();
             }
 
-            if (gamepad2_dpad_down.pressed(gamepad2.dpad_down) && ropeClimbingAttached) {
+            if (gamepad2_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
                 climbRope.rotateToHome();
             }
 
@@ -305,7 +305,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             }
 
 
-            boolean needToOpenBallPusher = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
+            /*boolean needToOpenBallPusher = gamepad2_dpad_right.toggle(gamepad2.dpad_right);
 
             if (needToOpenBallPusher && !openedBallPusher) {
                 openedBallPusher = true;
@@ -314,6 +314,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 openedBallPusher = false;
                 ballPusher.close(1600);
             }
+            */
 
             //flag
             boolean needFlagRaised = gamepad2_share.toggle(gamepad2.share);
@@ -361,7 +362,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
             telemetry.addData("Field Centric", fieldCentric);
             telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
-            telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
+            //telemetry.addData("Pitch", imuPitch * 180 / 3.14159265358979323);
 
             DriveGear currentDriveGear = DriveGear.LOW;
 
@@ -370,7 +371,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             } else if (gamepad1_right_bumper.released(gamepad1.right_bumper) && gear <= 2) {
                 gear += 1;
             }
-            telemetry.addData("Gear", gear);
+            //telemetry.addData("Gear", gear);
 
             if (gear == 1) {
                 currentDriveGear = DriveGear.LOW;
