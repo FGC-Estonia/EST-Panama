@@ -162,12 +162,13 @@ public class MoveRobot implements DriveBaseController {
         telemetry.addData("right front", rightFrontDriveEx.getVelocity());
         telemetry.addData("left back", leftBackDriveEx.getVelocity());
         telemetry.addData("right back", rightBackDriveEx.getVelocity());
-        */
+
         telemetry.addData("LeftFrontDirection: ", leftFrontDriveEx.getDirection());
         telemetry.addData("LeftBackDirection: ", leftBackDriveEx.getDirection());
         telemetry.addData("RightFrontDirection: ", rightFrontDriveEx.getDirection());
         telemetry.addData("RightBackDirection: ", rightBackDriveEx.getDirection());
-    } // Correct closing brace for the `move` method.
+        */
+    }
 
     @Override
     public void drive(double imuAngle,
