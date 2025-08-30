@@ -42,6 +42,7 @@ import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
 import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
 import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
 import org.firstinspires.ftc.teamcode.mainModules.RaiseFlag;
+import org.firstinspires.ftc.teamcode.mainModules.Autonomous;
 
 import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 
@@ -109,7 +110,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
         //MoveRobotTank moveRobotTank = new MoveRobotTank(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
-        //Autonomous autonomous = new Autonomous(moveRobot, hardwareMap,telemetry);
+        Autonomous autonomous = new Autonomous(driveBase, hardwareMap,telemetry);
 
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
@@ -352,7 +353,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
 
             //autonomous
-            //autonomous.showAprilTagData();
+            autonomous.showAprilTagData();
 
             if (gamepad1_options.pressed(gamepad1.options)) {
                 gamepad1.rumble(1, 1, 1000);
