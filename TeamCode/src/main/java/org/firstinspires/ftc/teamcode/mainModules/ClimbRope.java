@@ -197,6 +197,7 @@ public class ClimbRope {
 
         if (open) {
             telemetry.addData("Slide", "Opening...");
+            telemetry.addData("magnet isPressed:", magneticLimitSwitch.isPressed());
             telemetry.update();
 
             // extend

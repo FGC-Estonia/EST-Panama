@@ -296,7 +296,7 @@ public class EstoniaPanamaTank extends LinearOpMode { //file name is EstoniaPana
             }
 
             //throw system
-            if (gamepad2.triangle) {
+            if (gamepad2.square) {
                 throwBalls.start();
             } else {
                 throwBalls.stop();

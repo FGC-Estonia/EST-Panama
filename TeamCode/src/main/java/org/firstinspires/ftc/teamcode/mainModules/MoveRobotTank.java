@@ -129,6 +129,7 @@ public class MoveRobotTank implements DriveBaseController {
         // Tank drive ignores strafe (leftRight) and fieldCentric
         this.maxSpeed = gear.maxSpeed;
         this.turnSpeed = gear.turnSpeed;
+        this.turnSpeed = (gear.telemetryName.equals("1") ? 0.4 : gear.telemetryName.equals("2") ? 0.6 : 0.8);
         telemetry.addData("Gear", gear.telemetryName);
 
         // before limiting:
@@ -140,12 +141,12 @@ public class MoveRobotTank implements DriveBaseController {
         //boolean reversingTurn  = (Math.signum(rawTurn)  != Math.signum(lastTurn)) && lastTurn != 0 && (Math.abs(rawTurn) > 0.05);
 
         // cubic scaling:
-        double drive = driverLimiter.calculate(Math.pow(rawDrive, 3));
+        double drive = -driverLimiter.calculate(Math.pow(rawDrive, 3));
         //boolean stationaryTurn = Math.abs(drive) < STATIONARY_TURN_THRESHOLD;
 
         double rawTurnCubed = Math.pow(rawTurn, 3);
         //double turn = stationaryTurn ? rawTurnCubed : rawTurnCubed;
-        double turn = Math.copySign(Math.min(Math.abs(rawTurnCubed), MAX_TURN_SPEED), rawTurnCubed);
+        double turn = rawTurnCubed;
 
         drive = (rawDrive == 0) ? 0 : drive;
         turn  = (rawTurn == 0) ? 0 : turn;
