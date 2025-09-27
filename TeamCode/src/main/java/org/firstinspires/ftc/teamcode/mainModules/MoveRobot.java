@@ -86,17 +86,6 @@ public class MoveRobot implements DriveBaseController {
                      boolean fieldCentric,
                      DriveGear driveGear
     ) {
-        // Old code which sets the same maxSpeed as the driveGear - can be switched out with the current version
-        /*if (driveGear.maxSpeed == 0.35) {
-            maxSpeed=0.25;
-            telemetry.addData("Gear", "speed1");
-        }else if (driveGear.maxSpeed == 0.6) {
-            maxSpeed=0.5;
-            telemetry.addData("Gear", "speed2");
-        }else if (driveGear.maxSpeed == 1) {
-            maxSpeed=1;
-            telemetry.addData("Gear", "speed3");
-        } */
         this.maxSpeed = driveGear.maxSpeed;
         telemetry.addData("Gear", driveGear.telemetryName);
 
@@ -157,17 +146,7 @@ public class MoveRobot implements DriveBaseController {
             rightFrontDriveEx.setPower(rightFrontPowerRaw / max * maxSpeed);
             rightBackDriveEx.setPower(rightBackPowerRaw / max * maxSpeed);
         }
-        /*
-        telemetry.addData("left front", leftFrontDriveEx.getVelocity());
-        telemetry.addData("right front", rightFrontDriveEx.getVelocity());
-        telemetry.addData("left back", leftBackDriveEx.getVelocity());
-        telemetry.addData("right back", rightBackDriveEx.getVelocity());
 
-        telemetry.addData("LeftFrontDirection: ", leftFrontDriveEx.getDirection());
-        telemetry.addData("LeftBackDirection: ", leftBackDriveEx.getDirection());
-        telemetry.addData("RightFrontDirection: ", rightFrontDriveEx.getDirection());
-        telemetry.addData("RightBackDirection: ", rightBackDriveEx.getDirection());
-        */
     }
 
     @Override
