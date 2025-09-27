@@ -8,8 +8,6 @@ import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.util.HardwareConstants;
 
-import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
-
 public class MoveRobot implements DriveBaseController {
 
 
@@ -30,6 +28,24 @@ public class MoveRobot implements DriveBaseController {
         double wantedAngle = 0;
 
         double maxSpeed=1;
+
+    // Defines the different drive speed gears.
+
+    public enum DriveGear {
+        LOW(0.35, 0.4, "Low"),
+        MEDIUM(0.6, 0.5, "Medium"),
+        HIGH(1.0, 0.8, "High");
+
+        public final double maxSpeed;
+        public final double turnSpeed; // This 'turnSpeed' from enum seems to be a direct speed cap for turning
+        public final String telemetryName;
+
+        DriveGear(double maxSpeed, double turnSpeed, String telemetryName) {
+            this.maxSpeed = maxSpeed;
+            this.turnSpeed = turnSpeed;
+            this.telemetryName = telemetryName;
+        }
+    }
 
         public MoveRobot(boolean protect, HardwareMap hardwareMap, Telemetry telemetry, boolean useVelocity){
 

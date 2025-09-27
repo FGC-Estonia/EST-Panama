@@ -40,14 +40,12 @@ import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.common.util.Presses;
 import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
 import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
-import org.firstinspires.ftc.teamcode.mainModules.PoseEstimator;
 import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
 import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
 import org.firstinspires.ftc.teamcode.mainModules.RaiseFlag;
-import org.firstinspires.ftc.teamcode.mainModules.Autonomous;
 
 import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
-import static org.firstinspires.ftc.teamcode.mainModules.MoveRobotTank.DriveGear;
+import static org.firstinspires.ftc.teamcode.mainModules.MoveRobot.DriveGear;
 
 /* ======================
    Opmode annotation + class declaration
@@ -99,10 +97,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
 
         // --- Core managers & modules initialization ---
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry, true);
-        PoseEstimator poseEstimator = new PoseEstimator(imuManager, HALF_WHEELBASE, HALF_TRACK);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
-        Autonomous autonomous = new Autonomous(driveBase, hardwareMap,telemetry);
 
         // --- Try to attach optional modules (safe to fail) ---
         try {
@@ -295,10 +291,7 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
                 isFlagRaised = false;
             }
 
-            //poseestimator
-            if (gamepad1.circle) {
-                poseEstimator.resetPoseEstimate();
-            }
+
 
 
             /* ======================
@@ -313,23 +306,8 @@ public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.
             int deltaFR_ticks = curDriveMotorPositions[2] - lastDriveMotorPositions[2];
             int deltaFL_ticks = curDriveMotorPositions[3] - lastDriveMotorPositions[3];
 
-            // save current positions for next loop
-            lastDriveMotorPositions = curDriveMotorPositions.clone();
-
-            double dBL = ticksToDistance(deltaBL_ticks);
-            double dBR = ticksToDistance(deltaBR_ticks);
-            double dFR = ticksToDistance(deltaFR_ticks);
-            double dFL = ticksToDistance(deltaFL_ticks);
-
-            // order: back-left, back-right, front-right, front-left as you requested
-            poseEstimator.update(dBL, dBR, dFR, dFL);
 
 
-            telemetry.addData("cur pose", poseEstimator.getPoseEstimateString());
-
-
-            //autonomous
-            autonomous.showAprilTagData();
 
             if (gamepad1_options.pressed(gamepad1.options)) {
                 gamepad1.rumble(1, 1, 1000);
