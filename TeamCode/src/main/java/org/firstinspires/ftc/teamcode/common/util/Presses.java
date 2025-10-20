@@ -1,15 +1,18 @@
-package org.firstinspires.ftc.teamcode.common.util; //place where the code is located
+package org.firstinspires.ftc.teamcode.common.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Presses - Utility class for reliable button handling and toggling
+ * Supports single presses, releases, toggles, and combo inputs.
+ */
 public class Presses {
 
     private boolean toggledVariable = false;
     private boolean wasPressedVariable = false;
-    private ToggleGroup toggleGroup = null; // Reference to the group
+    private ToggleGroup toggleGroup = null;
 
-    // Constructor for individual Presses (not part of a group)
+    // Constructor for individual Presses
     public Presses() {}
 
     // Constructor for group-managed Presses
@@ -18,95 +21,93 @@ public class Presses {
         this.toggleGroup.addPress(this);
     }
 
-    // Returns true after the button is released
-    public boolean released(boolean inputBoolean) {
-        if (wasPressedVariable != inputBoolean && wasPressedVariable) {
-            wasPressedVariable = inputBoolean;
-            return true;
-        } else {
-            wasPressedVariable = inputBoolean;
-            return false;
-        }
+    /** Returns true exactly once after a button is pressed */
+    public boolean pressed(boolean input) {
+        boolean result = !wasPressedVariable && input;
+        wasPressedVariable = input;
+        return result;
     }
 
-    // Returns true after the button state is changed
-    public boolean change(boolean inputBoolean) {
-        if (wasPressedVariable != inputBoolean) {
-            wasPressedVariable = inputBoolean;
-            return true;
-        } else {
-            wasPressedVariable = inputBoolean;
-            return false;
-        }
+    /** Returns true exactly once after a button is released */
+    public boolean released(boolean input) {
+        boolean result = wasPressedVariable && !input;
+        wasPressedVariable = input;
+        return result;
     }
 
-    // Returns true after the button is pressed
-    public boolean pressed(boolean inputBoolean) {
-        if (wasPressedVariable != inputBoolean && !wasPressedVariable) {
-            wasPressedVariable = inputBoolean;
-            return true;
-        } else {
-            wasPressedVariable = inputBoolean;
-            return false;
-        }
+    /** Returns true whenever button state changes (press or release) */
+    public boolean change(boolean input) {
+        boolean result = wasPressedVariable != input;
+        wasPressedVariable = input;
+        return result;
     }
 
-    // Sets the toggled state to false
-    public void setToggleFalse() {
-        toggledVariable = false;
-    }
+    /** Sets the toggle state manually */
+    public void setToggleFalse() { toggledVariable = false; }
+    public void setToggleTrue() { toggledVariable = true; }
 
-    // Sets the toggled state to true
-    public void setToggleTrue() {
-        toggledVariable = true;
-    }
-
-    // Allows toggling of a button after presses
-    public boolean toggle(boolean inputBoolean) {
-        if (pressed(inputBoolean)) {
-            if (toggledVariable) {
-                toggledVariable = false;  // Untoggle if already toggled
-            } else {
-                if (toggleGroup != null) {
-                    toggleGroup.toggle(this);  // Notify the group to toggle this and untoggle others
-                } else {
-                    toggledVariable = !toggledVariable;  // Individual toggle if not part of a group
-                }
-            }
+    /** Toggle logic (works both standalone or in a ToggleGroup) */
+    public boolean toggle(boolean input) {
+        if (pressed(input)) {
+            if (toggleGroup != null) toggleGroup.toggle(this);
+            else toggledVariable = !toggledVariable;
         }
         return toggledVariable;
     }
 
-    // For easily returning the toggled state
-    public boolean returnToggleState() {
-        return toggledVariable;
-    }
+    /** Returns the current toggle state */
+    public boolean returnToggleState() { return toggledVariable; }
 
-    // Inner class to manage a group of Presses instances
+    // =========================
+    // GROUP HANDLING
+    // =========================
     public static class ToggleGroup {
-        private List<Presses> pressesList = new ArrayList<>();
+        private final List<Presses> pressesList = new ArrayList<>();
 
-        // Add a Presses instance to the group
+        /** Add a Presses instance to this toggle group */
         public void addPress(Presses presses) {
             pressesList.add(presses);
         }
 
-        // Toggle a specific Presses instance and untoggle the others
+        /** Activates one Presses instance, deactivates others */
         public void toggle(Presses pressedInstance) {
-            for (Presses presses : pressesList) {
-                if (presses == pressedInstance) {
-                    presses.setToggleTrue();  // Toggle the selected one
-                } else {
-                    presses.setToggleFalse(); // Untoggle all others
-                }
+            for (Presses p : pressesList) {
+                p.toggledVariable = (p == pressedInstance);
             }
         }
 
-        // Untoggle all Presses in the group
+        /** Untoggles all presses in the group */
         public void untoggleAll() {
-            for (Presses presses : pressesList) {
-                presses.setToggleFalse();
-            }
+            for (Presses p : pressesList) p.toggledVariable = false;
         }
+    }
+
+    // =========================
+    // COMBO HANDLING
+    // =========================
+
+    /** Returns true when all provided buttons are currently pressed */
+    public static boolean comboPressed(boolean... inputs) {
+        for (boolean in : inputs) if (!in) return false;
+        return true;
+    }
+
+    // Map to track combo state per unique combo hash
+    private static final Map<Integer, Boolean> comboPressStates = new HashMap<>();
+
+    /**
+     * Handles a toggle activated by pressing a combination (e.g. Options + Share)
+     * Each unique combo has its own memory.
+     */
+    public static boolean comboToggle(boolean currentState, boolean... inputs) {
+        int comboHash = Arrays.hashCode(inputs);
+        boolean comboDown = comboPressed(inputs);
+        boolean wasDown = comboPressStates.getOrDefault(comboHash, false);
+
+        boolean toggled = currentState;
+        if (comboDown && !wasDown) toggled = !currentState; // toggle only on new combo press
+
+        comboPressStates.put(comboHash, comboDown);
+        return toggled;
     }
 }

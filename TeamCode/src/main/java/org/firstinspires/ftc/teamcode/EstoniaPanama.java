@@ -1,363 +1,197 @@
-package org.firstinspires.ftc.teamcode;  //place where the code is located
+package org.firstinspires.ftc.teamcode;
 
-/* Damn,
-
-There is a huge bug in our code:
-    ,__                   __
-    '~~****Nm_    _mZ*****~~
-            _8@mm@K_
-           W~@`  '@~W
-          ][][    ][][
-    gz    'W'W.  ,W`W`    es
-  ,Wf    gZ****MA****Ns    VW.
- gA`   ,Wf     ][     VW.   'Ms
-Wf    ,@`      ][      '@.    VW
-M.    W`  _mm_ ][ _mm_  'W    ,A
-'W   ][  i@@@@i][i@@@@i  ][   W`
- !b  @   !@@@@!][!@@@@!   @  d!
-  VWmP    ~**~ ][ ~**~    YmWf
-    ][         ][         ][
-  ,mW[         ][         ]Wm.
- ,A` @  ,gms.  ][  ,gms.  @ 'M.
- W`  Yi W@@@W  ][  W@@@W iP  'W
-d!   'W M@@@A  ][  M@@@A W`   !b
-@.    !b'V*f`  ][  'V*f`d!    ,@
-'Ms    VW.     ][     ,Wf    gA`
-  VW.   'Ms.   ][   ,gA`   ,Wf
-   'Ms    'V*mmWWmm*f`    gA`
-*/
-
-/* ======================
-   Imports (external modules & utilities)
-   ====================== */
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.common.util.ImuManager;
-import org.firstinspires.ftc.teamcode.mainModules.MoveRobot;
 import org.firstinspires.ftc.teamcode.common.util.Presses;
-import org.firstinspires.ftc.teamcode.mainModules.ClimbRope;
-import org.firstinspires.ftc.teamcode.mainModules.CollectBalls;
-import org.firstinspires.ftc.teamcode.mainModules.BallPusher;
-import org.firstinspires.ftc.teamcode.mainModules.SpinWheel;
-import org.firstinspires.ftc.teamcode.mainModules.RaiseFlag;
-
+import org.firstinspires.ftc.teamcode.mainModules.*;
 import org.firstinspires.ftc.teamcode.common.util.DriveBaseController;
 import static org.firstinspires.ftc.teamcode.mainModules.MoveRobot.DriveGear;
 
-/* ======================
-   Opmode annotation + class declaration
-   ====================== */
-@TeleOp(name = "Main code Estonia Panama")
-// allows to display the code in the driver station, comment out to remove
-public class EstoniaPanama extends LinearOpMode { //file name is EstoniaPanamas.java    extends the prebuilt LinearOpMode by rev to run
-    /* ======================
-       Fields / State
-       ====================== */
-    int climbingDirection = 0; // 0 - stop, 1 - stay on rope, 2 - up, -1 - down, 3 - joystick
-    int collectingDirection = 0; // 0 - stop, 1 - in, -1 - out
+@TeleOp(name = "Main Code Estonia Panama")
+public class EstoniaPanama extends LinearOpMode {
 
-    int[] lastDriveMotorPositions = {0, 0, 0, 0};
+    // --- Runtime state ---
+    private int climbingDirection = 0;
+    private int collectingDirection = 0;
+    private boolean fieldCentric = false;
+    private boolean isFlagRaised = false;
+    private boolean isSpinningWheel = false;
+    private boolean debugTelemetry = false;
+    private int gear = 1;
 
-    boolean isSpinningWheel = false;
-    ElapsedTime runtime = new ElapsedTime();
-    float spinWheelStartTime = (float) runtime.seconds();
-    int gear = 1;
-    // Robot geometry / encoder constants
-    private static final double TICKS_PER_REV = 560.0; // TICKS_PER_REV: encoder ticks per motor revolution
-    private static final double WHEEL_DIAMETER = 0.09; // meters, replace with your wheel diameter
-    private static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER; // robot geometry for kinematics: half distances (meters) - replace with your robot measurements
-    private static final double HALF_WHEELBASE = 0.155;  // half distance front-back (m) - replace
-    private static final double HALF_TRACK = 0.2; // half distance left-right (m) - replace
+    private final ElapsedTime runtime = new ElapsedTime();
+    private DriveBaseController driveBase;
 
-    boolean fieldCentric = false;
-    DriveBaseController driveBase;
-    boolean isFlagRaised = false;
-
-    /* ======================
-       Main opmode loop
-       ====================== */
     @Override
     public void runOpMode() throws InterruptedException {
         boolean protect = true;
 
-        // --- Drive base init ---
+        // --- Core systems ---
         driveBase = new MoveRobot(protect, hardwareMap, telemetry, true);
-
-        // --- subsystem placeholders (may remain null if hardware absent) ---
-        ClimbRope climbRope = null;
-        boolean ropeClimbingAttached = false; // leave at false, it detects automatically
-        RaiseFlag raiseFlag = null;
-        boolean raiseFlagAttached = false;  // leave at false, it detects automatically
-        CollectBalls collectBalls = null;
-        boolean collectBallsAttached = false; // leave at false, it detects automatically
-
-
-        // --- Core managers & modules initialization ---
         ImuManager imuManager = new ImuManager(protect, hardwareMap, telemetry, true);
         BallPusher ballPusher = new BallPusher(hardwareMap, telemetry);
         SpinWheel spinWheel = new SpinWheel(hardwareMap, telemetry);
 
-        // --- Try to attach optional modules (safe to fail) ---
+        // --- Optional subsystems ---
+        ClimbRope climbRope = null;
+        RaiseFlag raiseFlag = null;
+        CollectBalls collectBalls = null;
+
+        boolean ropeClimbingAttached = false;
+        boolean raiseFlagAttached = false;
+        boolean collectBallsAttached = false;
+
         try {
             climbRope = new ClimbRope(protect, hardwareMap, telemetry);
             ropeClimbingAttached = true;
-        } catch (Exception e) {
-            telemetry.log().add("ClimbRope hardware not found — rope climb disabled");
+        } catch (Exception ignored) {
+            telemetry.log().add("Rope climbing not attached");
         }
 
         try {
             raiseFlag = new RaiseFlag(hardwareMap, telemetry);
             raiseFlagAttached = true;
-        } catch (Exception e) {
-            telemetry.log().add("ClimbRope hardware not found — rope climb disabled");
+        } catch (Exception ignored) {
+            telemetry.log().add("Flag raise not attached");
         }
 
         try {
             collectBalls = new CollectBalls(protect, hardwareMap, telemetry);
             collectBallsAttached = true;
-        } catch (Exception e) {
-            telemetry.log().add("Collecting balls hardware not found — collecting balls disabled");
+        } catch (Exception ignored) {
+            telemetry.log().add("Collector not attached");
         }
 
-         /* ======================
-           Controls: Presses wrappers and toggles
-           (grouped and annotated for readability — no logic changed)
-           ====================== */
+        // --- Controls (Presses wrappers) ---
+        Presses g1Share = new Presses();         // field-centric toggle
+        Presses g1Options = new Presses();       // IMU reset
+        Presses g1LeftBumper = new Presses();    // gear down
+        Presses g1RightBumper = new Presses();   // gear up
 
-        // Unused controls reserved for future use
-        Presses gamepad1_left_trigger = new Presses();
-        Presses gamepad1_right_trigger = new Presses();
-        Presses gamepad2_cross = new Presses();
-        Presses gamepad1_dpad_left = new Presses();
-        Presses gamepad1_dpad_right = new Presses();
-        Presses gamepad1_dpad_up = new Presses();
-        Presses gamepad1_dpad_down = new Presses();
-        Presses gamepad2_dpad_up = new Presses();
-        Presses gamepad2_dpad_down = new Presses();
-        Presses gamepad2_left_bumper = new Presses();
-        // Drive speed toggle group (replaced by drivegear)
-        Presses.ToggleGroup speedSelectToggle = new Presses.ToggleGroup();
-        Presses gamepad1_square = new Presses(speedSelectToggle);
-        Presses gamepad1_triangle = new Presses(speedSelectToggle);
-        Presses gamepad1_circle = new Presses(speedSelectToggle);
-        Presses gamepad1_cross = new Presses(speedSelectToggle);
-        gamepad1_triangle.setToggleTrue();//set default value
-
-        // Controls for rope climbing
-        Presses gamepad2_triangle = new Presses();
-        // Also using:
-        // > gamepad2.left_bumper   - climb up
-        // > gamepad2.right_bumper  - climb down
-        // > gamepad2.left_stick_y  - manual joystick control (when abs > 0.05)
-        // Resetting ropeclimb position:
-        Presses gamepad2_dpad_left = new Presses();
-        Presses gamepad2_dpad_right = new Presses();
-
-        // Controls for spinning wheel
-        Presses gamepad2_square = new Presses();
-
-        // Controls for ball pusher:
-        // > gamepad2.right_stick_y   - joystick control
-
-        // Controls for collecting balls:
-        // > gamepad2.right_trigger   - suck balls in
-        // > gamepad2.left_trigger    - let balls out
-
-        // Controls for drive gear
-        Presses gamepad1_right_bumper = new Presses();
-        Presses gamepad1_left_bumper = new Presses();
-
-        // Controls for flag raising
-        Presses gamepad2_share = new Presses();
-
-        // Controls for fieldcentric toggle and gyro reset
-        Presses gamepad1_share = new Presses();
-        Presses gamepad1_options = new Presses();
-
+        Presses g2Square = new Presses();        // spin wheel
+        Presses g2Triangle = new Presses();      // rope hold
+        Presses g2DpadLeft = new Presses();      // climb home
+        Presses g2DpadRight = new Presses();     // remember home
+        Presses g2Share = new Presses();         // flag raise
 
         telemetry.update();
-        waitForStart(); //everything has been initialized, waiting for the start button
-        while (opModeIsActive()) { // main loop
+        waitForStart();
 
-            //gyro reset
-            if (gamepad1.options) {
+        // --- Start timing after match start ---
+        runtime.reset();
+
+        while (opModeIsActive()) {
+
+            // === Combo debug toggle ===
+            debugTelemetry = Presses.comboToggle(debugTelemetry, gamepad1.options, gamepad1.share);
+            if (Presses.comboPressed(gamepad1.options, gamepad1.share))
+                gamepad1.rumble(0.4, 0.4, 100);
+
+            // === IMU reset (single press) ===
+            if (g1Options.pressed(gamepad1.options)) {
                 imuManager.resetImu();
+                gamepad1.rumble(0.6, 0.6, 200);
             }
 
-            //move robot
+            // === Drive axes ===
             double imuAngle = imuManager.getYawRadians();
             double imuPitch = imuManager.getPitchRadians();
-            double drive = -gamepad1.left_stick_x;
-            double strafe = gamepad1.left_stick_y;
+            double drive = -gamepad1.left_stick_y;
+            double strafe = gamepad1.left_stick_x;
             double turn = -gamepad1.right_stick_x;
 
-            // FieldCentric rumble
-            if (gamepad1_share.pressed(gamepad1.share)) {
+            // === Field-centric toggle ===
+            if (g1Share.pressed(gamepad1.share)) {
                 fieldCentric = !fieldCentric;
-                if (fieldCentric) {
-                    // One long 500 ms rumble when turning ON
-                    gamepad1.rumble(1.0, 1.0, 500);
-                } else {
-                    // Two short 100 ms rumbles when turning OFF
-                    gamepad1.rumble(0.6, 0.6, 100);
-                }
+                if (fieldCentric) gamepad1.rumble(1.0, 1.0, 400);
+                else gamepad1.rumble(0.6, 0.6, 100);
             }
 
+            // === Rope climbing ===
+            boolean holdingOnRope = g2Triangle.toggle(gamepad2.triangle);
 
-            // ROPE CLIMBING
-            boolean holdingOnRope = gamepad2_triangle.toggle(gamepad2.triangle);
+            if (holdingOnRope) climbingDirection = 1;
+            else if (gamepad2.left_bumper) climbingDirection = 2;
+            else if (gamepad2.right_bumper) climbingDirection = -1;
+            else if (Math.abs(gamepad2.left_stick_y) > 0.05) climbingDirection = 3;
+            else climbingDirection = 0;
 
-            if (holdingOnRope) {
-                climbingDirection = 1;  // hold position
-            } else if (gamepad2.left_bumper) {
-                climbingDirection = 2;  // climb up
-            } else if (gamepad2.right_bumper) {
-                climbingDirection = -1; // climb down
-            } else if (Math.abs(gamepad2.left_stick_y) > 0.05) {
-                climbingDirection = 3;
-            } else {
-                climbingDirection = 0;
-            }
-            // else: do nothing, keep previous direction (motor holds position)
-
-            // Apply motor control
-            if (ropeClimbingAttached) {
+            if (ropeClimbingAttached)
                 climbRope.ropeClimbing(climbingDirection, -gamepad2.left_stick_y);
-            }
-            if (gamepad2_dpad_right.pressed(gamepad2.dpad_right) && ropeClimbingAttached) {
+
+            if (g2DpadRight.pressed(gamepad2.dpad_right) && ropeClimbingAttached)
                 climbRope.rememberHomePosition();
-            }
-
-            if (gamepad2_dpad_left.pressed(gamepad2.dpad_left) && ropeClimbingAttached) {
+            if (g2DpadLeft.pressed(gamepad2.dpad_left) && ropeClimbingAttached)
                 climbRope.rotateToHome();
-            }
 
-            // SPINNING WHEEL
-            if (gamepad2_square.toggle((gamepad2.square))) {
-                if (isSpinningWheel) {
-                    float curTime = (float) runtime.seconds();
-                    float elapsedTime = curTime - spinWheelStartTime;
-
-                    telemetry.addData("time spinning wheel: ", elapsedTime);
-                    telemetry.addData("over 15 seconds: ", (elapsedTime > 15));
-
-                    if (elapsedTime > 15) {
-                        gamepad2.rumble(1, 1, 200);
-                    }
-
-                }
-
+            // === Spin wheel ===
+            if (g2Square.toggle(gamepad2.square)) {
                 spinWheel.spin(true);
                 isSpinningWheel = true;
-                spinWheelStartTime = (float) runtime.seconds();
             } else {
-                isSpinningWheel = false;
                 spinWheel.stop();
+                isSpinningWheel = false;
             }
 
-            // COLLECTING BALLS
-            if (gamepad2.right_trigger > 0) {
-                collectingDirection = 1;  // suck in
-            } else if (gamepad2.left_trigger > 0) {
-                collectingDirection = -1; // let out
-            } else {
-                collectingDirection = 0;  // hold
-            }
-
-            // Apply motor control
+            // === Collect balls ===
             if (collectBallsAttached) {
+                if (gamepad2.right_trigger > 0) collectingDirection = 1;
+                else if (gamepad2.left_trigger > 0) collectingDirection = -1;
+                else collectingDirection = 0;
                 collectBalls.collectingBalls(collectingDirection);
             }
 
-            // BALL PUSHER
-            if (gamepad2.right_stick_y > 0.3) {
-                ballPusher.setMotorStatuses(1);
-            } else if (gamepad2.right_stick_y < -0.3) {
-                ballPusher.setMotorStatuses(0);
-            } else {
-                ballPusher.setMotorStatuses(0.5);
+            // === Ball pusher ===
+            double stickY = gamepad2.right_stick_y;
+            if (stickY > 0.3) ballPusher.setMotorStatuses(1);
+            else if (stickY < -0.3) ballPusher.setMotorStatuses(0);
+            else ballPusher.setMotorStatuses(0.5);
+
+            // === Flag raising ===
+            boolean needFlagRaised = g2Share.toggle(gamepad2.share);
+            if (raiseFlagAttached) {
+                if (needFlagRaised && !isFlagRaised) {
+                    raiseFlag.setPos(1);
+                    isFlagRaised = true;
+                } else if (!needFlagRaised && isFlagRaised) {
+                    raiseFlag.setPos(0);
+                    isFlagRaised = false;
+                }
             }
 
-            // FLAG RAISING
-            boolean needFlagRaised = gamepad2_share.toggle(gamepad2.share);
-            if (needFlagRaised && !isFlagRaised && raiseFlagAttached) {
-                raiseFlag.setPos(1);
-                isFlagRaised = true;
-            } else if (!needFlagRaised && isFlagRaised && raiseFlagAttached) {
-                raiseFlag.setPos(0);
-                isFlagRaised = false;
-            }
+            // === Gear switching ===
+            if (g1LeftBumper.pressed(gamepad1.left_bumper) && gear > 1) gear--;
+            if (g1RightBumper.pressed(gamepad1.right_bumper) && gear < 3) gear++;
 
+            DriveGear currentDriveGear =
+                    (gear == 1) ? DriveGear.LOW :
+                            (gear == 2) ? DriveGear.MEDIUM : DriveGear.HIGH;
 
+            // === Drive control ===
+            driveBase.drive(imuAngle, imuPitch, strafe, drive, turn, fieldCentric, currentDriveGear);
 
-
-            /* ======================
-               Encoder delta -> distance -> pose update
-               - read encoders, compute deltas, convert to meters, update estimator
-               - ordering: back-left, back-right, front-right, front-left
-               ====================== */
-            int[] curDriveMotorPositions = driveBase.getEncoderPositions();
-
-            int deltaBL_ticks = curDriveMotorPositions[0] - lastDriveMotorPositions[0];
-            int deltaBR_ticks = curDriveMotorPositions[1] - lastDriveMotorPositions[1];
-            int deltaFR_ticks = curDriveMotorPositions[2] - lastDriveMotorPositions[2];
-            int deltaFL_ticks = curDriveMotorPositions[3] - lastDriveMotorPositions[3];
-
-
-
-
-            if (gamepad1_options.pressed(gamepad1.options)) {
-                gamepad1.rumble(1, 1, 1000);
-            }
-
-            telemetry.addData("Field Centric", fieldCentric);
-            telemetry.addData("Heading", imuAngle * 180 / 3.14159265358979323);
-
-
-            /* ======================
-               Drive gears: read bumpers to increment/decrement gear
-               - clamps gear between 1 and 3 and maps to DriveGear enum
-               ====================== */
-            DriveGear currentDriveGear = DriveGear.LOW;
-
-            if (gamepad1_left_bumper.released(gamepad1.left_bumper) && gear >= 2) {
-                gear -= 1;
-            } else if (gamepad1_right_bumper.released(gamepad1.right_bumper) && gear <= 2) {
-                gear += 1;
-            }
+            // === Telemetry ===
+            telemetry.addLine("— Main Telemetry —");
             telemetry.addData("Gear", gear);
+            telemetry.addData("Field Centric", fieldCentric);
+            telemetry.addData("Heading", "%.1f°", imuAngle * 180 / Math.PI);
 
-            if (gear == 1) {
-                currentDriveGear = DriveGear.LOW;
-            } else if (gear == 2) {
-                currentDriveGear = DriveGear.MEDIUM;
-            } else if (gear == 3) {
-                currentDriveGear = DriveGear.HIGH;
+            if (debugTelemetry) {
+                telemetry.addLine("— Debug Telemetry —");
+                telemetry.addData("Pitch", "%.1f°", imuPitch * 180 / Math.PI);
+                telemetry.addData("Drive Input", "%.2f", drive);
+                telemetry.addData("Strafe Input", "%.2f", strafe);
+                telemetry.addData("Turn Input", "%.2f", turn);
+                telemetry.addData("CollectDir", collectingDirection);
+                telemetry.addData("ClimbDir", climbingDirection);
+                telemetry.addData("Flag", isFlagRaised);
+                telemetry.addData("Wheel", isSpinningWheel);
             }
-
-            telemetry.addData("drive",drive);
-            telemetry.addData("strafe", strafe);
-            telemetry.addData("turn", turn);
-            driveBase.drive (
-                    imuAngle, imuPitch,
-                    strafe, drive, turn,
-                    fieldCentric, currentDriveGear
-            );
 
             telemetry.update();
-        } // This brace correctly closes the `while (opModeIsActive())` loop.
-    } // This brace correctly closes the `runOpMode()` method.
-
-    /* ======================
-       Helper utilities
-       ====================== */
-
-    // helper to convert encoder ticks -> linear distance (meters) ----
-    private double ticksToDistance(int ticks) {
-        return ticks * (WHEEL_CIRCUMFERENCE / TICKS_PER_REV);
+        }
     }
-
-} // This brace correctly closes the `EstoniaPanama` class.
+}
