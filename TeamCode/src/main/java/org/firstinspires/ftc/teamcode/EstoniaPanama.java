@@ -55,14 +55,14 @@ public class EstoniaPanama extends LinearOpMode {
             raiseFlag = new RaiseFlag(hardwareMap, telemetry);
             raiseFlagAttached = true;
         } catch (Exception ignored) {
-            telemetry.log().add("Flag raise not attached");
+            telemetry.log().add("Flag servo not attached");
         }
 
         try {
             collectBalls = new CollectBalls(protect, hardwareMap, telemetry);
             collectBallsAttached = true;
         } catch (Exception ignored) {
-            telemetry.log().add("Collector not attached");
+            telemetry.log().add("Barrier collector not attached");
         }
 
         // --- Controls (Presses wrappers) ---
