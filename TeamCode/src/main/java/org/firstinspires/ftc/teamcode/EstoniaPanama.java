@@ -189,6 +189,7 @@ public class EstoniaPanama extends LinearOpMode {
                 telemetry.addData("ClimbDir", climbingDirection);
                 telemetry.addData("Flag", isFlagRaised);
                 telemetry.addData("Wheel", isSpinningWheel);
+                telemetry.addData("Spin Velocity (rad/s)", spinWheel.getVelocity());
             }
 
             telemetry.update();

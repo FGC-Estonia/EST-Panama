@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.mainModules;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -13,6 +12,7 @@ public class SpinWheel {
     private DcMotorEx wheelMotor;
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
+    private boolean spinning = false;
 
     public SpinWheel(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
@@ -23,17 +23,26 @@ public class SpinWheel {
     private void mapMotor() {
         wheelMotor = hardwareMap.get(DcMotorEx.class, HardwareConstants.WHEEL_MOTOR);
         wheelMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        wheelMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        wheelMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 
     public void spin(boolean clockwise) {
-        if (clockwise) {
-            wheelMotor.setVelocity(100*Math.PI/3, AngleUnit.RADIANS); // example max position (adjust as needed)
-        } else {
-            wheelMotor.setVelocity(0); // example min position (adjust as needed)
+        if (clockwise && !spinning) {
+            wheelMotor.setVelocity(100 * Math.PI / 3, AngleUnit.RADIANS);
+            spinning = true;
+        } else if (!clockwise && spinning) {
+            wheelMotor.setVelocity(0);
+            spinning = false;
         }
+    }
+
+    public double getVelocity() {
+        return wheelMotor.getVelocity(AngleUnit.RADIANS);
     }
 
     public void stop() {
         wheelMotor.setVelocity(0);
+        spinning = false;
     }
 }
