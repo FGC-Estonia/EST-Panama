@@ -171,7 +171,7 @@ public class EstoniaPanama extends LinearOpMode {
                             (gear == 2) ? DriveGear.MEDIUM : DriveGear.HIGH;
 
             // === Drive control ===
-            driveBase.drive(imuAngle, imuPitch, strafe, drive, turn, fieldCentric, currentDriveGear);
+            driveBase.drive(imuAngle, imuPitch, drive, strafe, turn, fieldCentric, currentDriveGear);
 
             // === Telemetry ===
             telemetry.addLine("— Main Telemetry —");
