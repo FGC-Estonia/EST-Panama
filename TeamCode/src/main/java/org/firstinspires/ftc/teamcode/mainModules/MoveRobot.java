@@ -103,7 +103,6 @@ public class MoveRobot implements DriveBaseController {
                      DriveGear driveGear
     ) {
         this.maxSpeed = driveGear.maxSpeed;
-        telemetry.addData("Gear", driveGear.telemetryName);
 
         double x;
         double y;

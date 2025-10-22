@@ -102,9 +102,13 @@ public class Presses {
     public static boolean comboToggle(boolean currentState, boolean... inputs) {
         int comboId = inputs.length;
         boolean comboDown = true;
-	for (boolean in : inputs) if (!in) comboDown = false;
+	    for (boolean in : inputs)
+            if (!in) {
+                comboDown = false;
+                break;
+            }
 
-    	boolean wasDown = comboPressStates.getOrDefault(comboId, false);
+    	boolean wasDown = Boolean.TRUE.equals(comboPressStates.getOrDefault(comboId, false));
     	boolean toggled = currentState;
 
         if (comboDown && !wasDown) toggled = !currentState; // toggle only on new combo press
