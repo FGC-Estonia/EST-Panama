@@ -87,13 +87,14 @@ public class EstoniaPanama extends LinearOpMode {
 
             // === Combo debug toggle ===
             debugTelemetry = Presses.comboToggle(debugTelemetry, gamepad1.options, gamepad1.share);
-            if (Presses.comboPressed(gamepad1.options, gamepad1.share))
+	    boolean debugCombo = Presses.comboPressed(gamepad1.options, gamepad1.share);
+            if (debugCombo)
                 gamepad1.rumble(0.4, 0.4, 100);
 
             // === IMU reset (single press) ===
-            if (g1Options.pressed(gamepad1.options)) {
+            if (g1Options.pressed(gamepad1.options) && !debugCombo) {
                 imuManager.resetImu();
-                gamepad1.rumble(0.6, 0.6, 200);
+                gamepad1.rumble(1.0, 1.0, 500);
             }
 
             // === Drive axes ===
@@ -104,7 +105,7 @@ public class EstoniaPanama extends LinearOpMode {
             double turn = -gamepad1.right_stick_x;
 
             // === Field-centric toggle ===
-            if (g1Share.pressed(gamepad1.share)) {
+            if (g1Share.pressed(gamepad1.share) && !debugCombo) {
                 fieldCentric = !fieldCentric;
                 if (fieldCentric) gamepad1.rumble(1.0, 1.0, 400);
                 else gamepad1.rumble(0.6, 0.6, 100);
