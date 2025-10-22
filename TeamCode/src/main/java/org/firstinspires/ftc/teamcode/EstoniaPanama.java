@@ -108,8 +108,8 @@ public class EstoniaPanama extends LinearOpMode {
             // === Drive axes ===
             double imuAngle = imuManager.getYawRadians();
             double imuPitch = imuManager.getPitchRadians();
-            double drive = -gamepad1.left_stick_y;
-            double strafe = gamepad1.left_stick_x;
+            double drive = gamepad1.left_stick_y;
+            double strafe = -gamepad1.left_stick_x;
             double turn = -gamepad1.right_stick_x;
 
             // === Field-centric toggle ===
