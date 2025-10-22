@@ -21,6 +21,8 @@ public class EstoniaPanama extends LinearOpMode {
     private boolean isSpinningWheel = false;
     private boolean debugTelemetry = false;
     private int gear = 1;
+    double debugComboBuffer = 0;
+    private ElapsedTime loopTimer = new ElapsedTime();
 
     private final ElapsedTime runtime = new ElapsedTime();
     private DriveBaseController driveBase;
@@ -85,14 +87,20 @@ public class EstoniaPanama extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            double deltaTime = loopTimer.seconds();
+            loopTimer.reset(); // Reset the timer for the next loop
+
             // === Combo debug toggle ===
             debugTelemetry = Presses.comboToggle(debugTelemetry, gamepad1.options, gamepad1.share);
-	    boolean debugCombo = Presses.comboPressed(gamepad1.options, gamepad1.share);
-            if (debugCombo)
+	        boolean debugCombo = Presses.comboPressed(gamepad1.options, gamepad1.share);
+
+            if (debugCombo) {
                 gamepad1.rumble(0.4, 0.4, 100);
+                debugComboBuffer = 0.8;
+            }
 
             // === IMU reset (single press) ===
-            if (g1Options.pressed(gamepad1.options) && !debugCombo) {
+            if (g1Options.pressed(gamepad1.options) && debugComboBuffer <= 0) {
                 imuManager.resetImu();
                 gamepad1.rumble(1.0, 1.0, 500);
             }
@@ -105,11 +113,13 @@ public class EstoniaPanama extends LinearOpMode {
             double turn = -gamepad1.right_stick_x;
 
             // === Field-centric toggle ===
-            if (g1Share.pressed(gamepad1.share) && !debugCombo) {
+            if (g1Share.pressed(gamepad1.share) && debugComboBuffer <= 0) {
                 fieldCentric = !fieldCentric;
                 if (fieldCentric) gamepad1.rumble(1.0, 1.0, 400);
                 else gamepad1.rumble(0.6, 0.6, 100);
             }
+
+            debugComboBuffer -= deltaTime;
 
             // === Rope climbing ===
             boolean holdingOnRope = g2Triangle.toggle(gamepad2.triangle);
