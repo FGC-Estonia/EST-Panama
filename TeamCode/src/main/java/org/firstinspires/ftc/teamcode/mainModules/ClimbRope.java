@@ -143,13 +143,13 @@ public class ClimbRope {
         double power;
 
         if (direction == 2) {  // Climb up
-            power = 1.0;
+            power = -1.0;
         } else if (direction == -1) {  // Climb down slowly
-            power = -CLIMB_DOWN_RATE;
+            power = CLIMB_DOWN_RATE;
         } else if (direction == 1) {
-            power = STAY_ON_RATE;
+            power = -STAY_ON_RATE;
         } else if (direction == 3) {
-            power = (stick + 1) * 0.6 - 0.2;
+            power = -((stick + 1) * 0.6 - 0.2);
         } else {
             power = 0;
         }
