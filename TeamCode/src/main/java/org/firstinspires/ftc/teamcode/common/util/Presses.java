@@ -100,14 +100,16 @@ public class Presses {
      * Each unique combo has its own memory.
      */
     public static boolean comboToggle(boolean currentState, boolean... inputs) {
-        int comboHash = Arrays.hashCode(inputs);
-        boolean comboDown = comboPressed(inputs);
-        boolean wasDown = comboPressStates.getOrDefault(comboHash, false);
+        int comboId = inputs.length;
+        boolean comboDown = true;
+	for (boolean in : inputs) if (!in) comboDown = false;
 
-        boolean toggled = currentState;
+    	boolean wasDown = comboPressStates.getOrDefault(comboId, false);
+    	boolean toggled = currentState;
+
         if (comboDown && !wasDown) toggled = !currentState; // toggle only on new combo press
 
-        comboPressStates.put(comboHash, comboDown);
+        comboPressStates.put(comboId, comboDown);
         return toggled;
     }
 }
