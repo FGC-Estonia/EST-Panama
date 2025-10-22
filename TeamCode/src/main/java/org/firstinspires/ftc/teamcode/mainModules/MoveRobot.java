@@ -103,7 +103,7 @@ public class MoveRobot implements DriveBaseController {
                      DriveGear driveGear
     ) {
         this.maxSpeed = driveGear.maxSpeed;
-	if (driveGear == DriveGear.LOW) {
+	if (driveGear == DriveGear.HIGH) {
             drive = Math.signum(drive) * Math.pow(Math.abs(drive), 1.8);
             strafe = Math.signum(strafe) * Math.pow(Math.abs(strafe), 1.8);
             turn = Math.signum(turn) * Math.pow(Math.abs(turn), 1.8);

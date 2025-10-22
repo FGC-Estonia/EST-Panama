@@ -26,7 +26,7 @@ public class ClimbRope {
     // Define constants for your climbMotor and gearing
     private static final double REV_HD_HEX_MOTOR_TICKS_PER_MOTOR_REV = 28.0; // From REV HD Hex Motor spec
     private static final double GEAR_RATIO_1 = 5.23;
-    private static final double GEAR_RATIO_2 = 3.61;
+    private static final double GEAR_RATIO_2 = 5.23;
     private static final double GEAR_RATIO_3 = 3.61;
 
     // Calculate the total ticks per revolution for the final output shaft
