@@ -149,7 +149,7 @@ public class ClimbRope {
         } else if (direction == 1) {
             power = -STAY_ON_RATE;
         } else if (direction == 3) {
-            power = -((stick + 1) * 0.6 - 0.2);
+            power = -(Math.pow(stick, 1));
         } else {
             power = 0;
         }
